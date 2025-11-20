@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+body{
+  background:black;
+}
+.antonio {
+  font-family: "Antonio", sans-serif;
+}
+.reem-kufi {
+  font-family: "Reem Kufi", sans-serif;
+}
+.anton{
+  font-family: "Anton", sans-serif;
+}
