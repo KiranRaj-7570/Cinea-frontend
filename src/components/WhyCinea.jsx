@@ -8,7 +8,7 @@ import Hero2Image from "../assets/hero2.jpg";
 export default function WhyCinea() {
   return (
     <section
-      className="relative w-full py-24 text-white"
+      className="relative min-h-screen w-full py-24 text-white"
       style={{
         backgroundImage: `url(${Hero2Image})`,
         backgroundSize: "cover",

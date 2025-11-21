@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App.jsx";
 import "@fontsource/reem-kufi/600.css";
+import "@fontsource/reem-kufi/700.css";
 import "@fontsource/anton/400.css";
 import "@fontsource/antonio/400.css";
 import "./index.css";

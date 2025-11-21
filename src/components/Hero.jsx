@@ -37,6 +37,7 @@ const Hero = () => {
           </Link>
         </div>
       </div>
+      
     </>
   );
 };

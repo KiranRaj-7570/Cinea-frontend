@@ -2,11 +2,11 @@ import Navbar from "../components/Navbar";
 
 import Hero from "../components/Hero";
 import WhyCinea from "../components/WhyCinea";
-import Testimonials from "../components/Testimonials";
+import Footer from "../components/Footer";
 
 const Landing = () => {
   return (
-    <div className="relative py-24 min-h-screen w-full overflow-hidden bg-black">
+    <div className="relative min-h-screen w-full overflow-hidden bg-black">
       
       <Navbar />
 
@@ -14,7 +14,7 @@ const Landing = () => {
 
       <WhyCinea />
 
-      <Testimonials />
+      <Footer />
     </div>
   );
 };
