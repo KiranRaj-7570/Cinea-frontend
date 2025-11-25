@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import Logo from "../assets/logo.svg";
-import { Menu, X } from "lucide-react"; 
+
+import { AuthContext } from "../context/AuthContext";
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
+
+  const { user, logoutUser } = useContext(AuthContext);
 
   return (
     <nav className="fixed top-4 left-1/2 -translate-x-1/2 w-[95%] max-w-[1298px] h-[72px] bg-[#222222] rounded-[70px] z-50 flex items-center justify-between px-6 shadow-lg backdrop-blur-md bg-opacity-90">
@@ -14,48 +16,47 @@ const Navbar = () => {
         <img src={Logo} alt="Cinéa Logo" className="w-full h-full object-contain" />
       </div>
 
-      {/* Desktop Menu */}
-      <div className="hidden lg:flex items-center gap-12">
-        <div className="flex px-6 gap-12 reem-kufi text-base font-semibold">
-          <Link to="/" className="text-[#F6E7C6] hover:text-white transition">Home</Link>
-          <Link to="/explore" className="text-[#F6E7C6] hover:text-white transition">Explore</Link>
-          <Link to="/watchlist" className="text-[#F6E7C6] hover:text-white transition">Watchlist</Link>
-          <Link to="/booking" className="text-[#F6E7C6] hover:text-white transition">Book Show</Link>
-        </div>
+      <div className="flex items-center gap-12">
+  <div className="flex px-6 gap-12 reem-kufi text-base font-semibold">
+    <Link to={user?"/home":"/login"} className="text-[#F6E7C6] hover:text-white transition">
+      Home
+    </Link>
 
-        {/* Button */}
-        <Link
-          to="/signup"
-          className="py-2.5 px-[30px] bg-[#FF7A1A] rounded-full hover:bg-[#f56c08] text-[#F6E7C6] transition reem-kufi text-base font-semibold"
-        >
-          Sign Up
+    {user && (
+      <>
+        <Link to="/explore" className="text-[#F6E7C6] hover:text-white transition">
+          Explore
         </Link>
-      </div>
 
-      {/* Mobile Menu Button */}
-      <button
-        className="lg:hidden text-[#F6E7C6]"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        {isOpen ? <X size={28} /> : <Menu size={28} />}
-      </button>
+        <Link to="/watchlist" className="text-[#F6E7C6] hover:text-white transition">
+          Watchlist
+        </Link>
 
-      {/* Mobile Dropdown */}
-      {isOpen && (
-        <div className="absolute top-20 left-0 w-full bg-[#222222] rounded-2xl flex flex-col items-center gap-6 py-6 lg:hidden text-base font-semibold shadow-xl animate-slideDown">
-          <Link to="/" onClick={() => setIsOpen(false)} className="text-[#F6E7C6]">Home</Link>
-          <Link to="/explore" onClick={() => setIsOpen(false)} className="text-[#F6E7C6]">Explore</Link>
-          <Link to="/watchlist" onClick={() => setIsOpen(false)} className="text-[#F6E7C6]">Watchlist</Link>
-          <Link to="/booking" onClick={() => setIsOpen(false)} className="text-[#F6E7C6]">Movie Booking</Link>
-          <Link
-            to="/signup"
-            onClick={() => setIsOpen(false)}
-            className="py-2.5 px-8 bg-[#FF7A1A] rounded-full text-[#222222] font-semibold"
-          >
-            Sign Up
-          </Link>
-        </div>
-      )}
+        <Link to="/booking" className="text-[#F6E7C6] hover:text-white transition">
+          Book Show
+        </Link>
+      </>
+    )}
+  </div>
+
+  {/* Auth Buttons */}
+  {!user ? (
+    <Link
+      to="/signup"
+      className="py-2.5 px-[30px] bg-[#FF7A1A] rounded-full hover:bg-[#f56c08] text-[#F6E7C6] transition reem-kufi text-base font-semibold"
+    >
+      Sign Up
+    </Link>
+  ) : (
+    <button
+      onClick={logoutUser}
+      className="py-2.5 px-[30px] border border-[#FF7A1A] rounded-full text-[#FF7A1A] hover:bg-[#FF7A1A] hover:text-black transition reem-kufi text-base font-semibold"
+    >
+      Logout
+    </button>
+  )}
+</div>
+
     </nav>
   );
 };
