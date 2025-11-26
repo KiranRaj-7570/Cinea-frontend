@@ -9,8 +9,7 @@ import Home from "./pages/Home";
 import Explore from "./pages/Explore";
 import Watchlist from "./pages/Watchlist";
 import Booking from "./pages/Booking";
-import ProtectedRoute from "./components/ProtectedRoute";
-
+import ProtectedRoute from "./routes/ProtectedRoute";
 function App() {
   const { user } = useContext(AuthContext);
 
