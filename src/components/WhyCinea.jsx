@@ -35,7 +35,7 @@ export default function WhyCinea() {
           discussing, and sharing — all in one simple, stylish space.
         </p>
 
-        {/* Icon Cards */}
+      
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10">
           
           <div className="flex flex-col items-center text-center gap-4">

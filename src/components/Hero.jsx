@@ -4,13 +4,12 @@ import HeroImage from "../assets/hero.jpg";
 const Hero = () => {
   return (
     <>
-      {/* Background Image */}
+      
       <div
         className="absolute inset-0 bg-cover bg-center max-h-screen"
         style={{ backgroundImage: `url(${HeroImage})` }}
       ></div>
 
-      {/* Content */}
       <div className="relative z-10 min-h-screen flex flex-col items-center justify-center text-center px-4">
         <h1 className="anton w-full max-w-[766px] text-[40px] md:text-[64px] leading-tight md:leading-24 mb-4 text-[#E6D1D2]">
           A World Built for Movie Lovers

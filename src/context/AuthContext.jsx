@@ -7,13 +7,12 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check login persistence
   useEffect(() => {
     const checkUser = async () => {
       try {
         const res = await api.get("/auth/me");
         setUser(res.data.user);
-      } catch {
+      } catch (err) {
         setUser(null);
       }
       setLoading(false);
@@ -26,7 +25,12 @@ export const AuthProvider = ({ children }) => {
     setUser(userData);
   };
 
-  const logoutUser = () => {
+  const logoutUser = async () => {
+    try {
+      await api.post("/auth/logout"); // important!
+    } catch (err) {
+      console.log("Logout request failed:", err);
+    }
     setUser(null);
   };
 

@@ -17,11 +17,11 @@ const Login = () => {
     try {
       const res = await api.post(
         "/auth/login",
-        { email, password } // needed later for secure cookies
+        { email, password } 
       );
       loginUser(res.data.user)
       setMessage("Login successful! Redirecting...");
-      setTimeout(() => navigate("/home"), 100); // redirect to home (temporary landing/home)
+      setTimeout(() => navigate("/home"), 100);
     } catch (err) {
       setMessage(err.response?.data?.message || "Login failed! Try again.");
     }

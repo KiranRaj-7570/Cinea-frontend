@@ -10,13 +10,14 @@ import Explore from "./pages/Explore";
 import Watchlist from "./pages/Watchlist";
 import Booking from "./pages/Booking";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import Profile from "./pages/Profile";
 function App() {
   const { user } = useContext(AuthContext);
 
   return (
     <Routes>
 
-      {/* Public Routes */}
+    
       <Route path="/" element={<Landing />} />
       
       <Route
@@ -29,7 +30,7 @@ function App() {
         element={!user ? <Signup /> : <Navigate to="/home" replace />}
       />
 
-      {/* Protected Routes */}
+     
       <Route
         path="/home"
         element={
@@ -62,6 +63,14 @@ function App() {
         element={
           <ProtectedRoute>
             <Booking />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Profile />
           </ProtectedRoute>
         }
       />
