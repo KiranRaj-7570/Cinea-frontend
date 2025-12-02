@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/axios";
+import { AuthContext } from "../context/AuthContext";
 
 const Signup = () => {
   const navigate = useNavigate();
+  const { loginUser } = useContext(AuthContext);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -14,21 +16,16 @@ const Signup = () => {
   const handleSignup = async (e) => {
     e.preventDefault();
     try {
-      const res = await api.post("/auth/signup", {
-        name,
-        email,
-        password,
-      });
-      loginUser(res.data.user);
+      const res = await api.post("/auth/signup", { name, email, password });
+
+      loginUser(res.data.user); // << IMPORTANT
 
       setMessage("Signup successful! Redirecting...");
-
       setTimeout(() => navigate("/home"), 1000);
     } catch (err) {
-      setMessage(err.response?.data?.message || "Signup failed! Try again.");
+      setMessage(err.response?.data?.msg || "Signup failed! Try again.");
     }
   };
-
   return (
     <div className="min-h-screen bg-black flex items-center justify-center px-4">
       <div className="w-full max-w-md bg-[#1A1A1A] p-8 rounded-2xl shadow-lg border border-gray-700">

@@ -9,17 +9,14 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
-  const {loginUser} = useContext(AuthContext);
+  const { loginUser } = useContext(AuthContext);
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
     try {
-      const res = await api.post(
-        "/auth/login",
-        { email, password } 
-      );
-      loginUser(res.data.user)
+      const res = await api.post("/auth/login", { email, password });
+      loginUser(res.data.user);
       setMessage("Login successful! Redirecting...");
       setTimeout(() => navigate("/home"), 100);
     } catch (err) {
@@ -30,7 +27,6 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-black flex items-center justify-center px-4">
       <div className="w-full max-w-md bg-[#1A1A1A] p-8 rounded-2xl shadow-lg border border-gray-700">
-
         <h2 className="text-3xl font-bold text-center text-white mb-6">
           Welcome Back 👋
         </h2>
@@ -65,14 +61,18 @@ const Login = () => {
         {message && (
           <p className="text-center text-sm text-[#FF7A1A] mt-4">{message}</p>
         )}
-
+        <Link
+          to="/forgot-password"
+          className="text-xs text-slate-400 hover:text-white"
+        >
+          Forgot Password?
+        </Link>
         <p className="text-center text-gray-400 text-sm mt-4">
           Don’t have an account?{" "}
           <Link to="/signup" className="text-[#FF7A1A] hover:underline">
             Create one
           </Link>
         </p>
-
       </div>
     </div>
   );

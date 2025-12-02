@@ -11,6 +11,7 @@ import Watchlist from "./pages/Watchlist";
 import Booking from "./pages/Booking";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import Profile from "./pages/Profile";
+import ForgotPassword from "./pages/ForgotPassword";
 function App() {
   const { user } = useContext(AuthContext);
 
@@ -74,6 +75,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
 
     </Routes>
   );
