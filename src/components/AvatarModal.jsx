@@ -80,10 +80,8 @@ const AvatarModal = ({ isOpen, onClose, user, onUpdate }) => {
   return (
     <Transition show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
-        {/* Overlay */}
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
 
-        {/* Panel */}
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Transition.Child
             as={Fragment}
@@ -102,7 +100,6 @@ const AvatarModal = ({ isOpen, onClose, user, onUpdate }) => {
                 Choose a new image or remove your current avatar.
               </p>
 
-              {/* Current / Preview Avatar */}
               <div className="mt-4 flex flex-col items-center gap-3">
                 <div className="h-24 w-24 rounded-full border border-slate-600 bg-slate-900 overflow-hidden flex items-center justify-center">
                   {preview ? (
@@ -148,7 +145,6 @@ const AvatarModal = ({ isOpen, onClose, user, onUpdate }) => {
                 </p>
               )}
 
-              {/* Big Action Buttons */}
               <div className="mt-5 space-y-3">
                 <button
                   onClick={handleUpload}

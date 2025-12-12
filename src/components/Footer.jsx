@@ -8,16 +8,15 @@ const Footer = () => {
     <footer className="bg-[#0C0C0C] text-[#ffffff] pt-16 pb-8 px-6">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
 
-        {/* Logo + Follow + Call */}
+     
         <div>
           <img src={Logo} alt="Cinéa Logo" className="w-60 mb-6" />
 
           <div className="w-full h-px bg-white/20 opacity-40 mb-6" />
 
-          {/* Social + Call in row */}
+         
           <div className="flex items-start gap-10">
-            
-            {/* Follow */}
+       
             <div>
               <h3 className="text-[#FF7A1A] font-semibold mb-3 reem-kufi">Follow us</h3>
               <div className="flex gap-4 text-xl">
@@ -27,7 +26,7 @@ const Footer = () => {
               </div>
             </div>
 
-            {/* Call */}
+            
             <div>
               <h3 className="text-[#FF7A1A] font-semibold mb-3 reem-kufi">Call us</h3>
               <p className="text-sm opacity-80 reem-kufi">+1 800 854-36-80</p>
@@ -36,7 +35,6 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Product */}
         <div>
           <h3 className="text-[#FF7A1A] font-semibold mb-4 reem-kufi">Product</h3>
           <ul className="space-y-2 opacity-90 text-sm reem-kufi">
@@ -48,7 +46,7 @@ const Footer = () => {
           </ul>
         </div>
 
-        {/* Use Cases */}
+       
         <div>
           <h3 className="text-[#FF7A1A] font-semibold mb-4 reem-kufi">Use Cases</h3>
           <ul className="space-y-2 opacity-90 text-sm reem-kufi">
@@ -59,7 +57,7 @@ const Footer = () => {
           </ul>
         </div>
 
-        {/* Company */}
+
         <div>
           <h3 className="text-[#FF7A1A] font-semibold mb-4 reem-kufi">Company</h3>
           <ul className="space-y-2 opacity-90 text-sm reem-kufi">
@@ -73,7 +71,7 @@ const Footer = () => {
 
       </div>
 
-      {/* Bottom */}
+      
       <div className="max-w-7xl mx-auto border-t border-white/10 mt-12 pt-6 flex flex-wrap justify-center gap-10 text-sm reem-kufi opacity-80">
         <Link to="#">Privacy Policy</Link>
         <Link to="#">Terms of Use</Link>

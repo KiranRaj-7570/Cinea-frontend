@@ -16,7 +16,7 @@ export default function WhyCinea() {
       }}
     >
 
-      {/* Content */}
+      
       <div className="relative z-10 max-w-[1200px] mx-auto text-center px-4">
         <h2 className="anton text-[46px] md:text-[70px] text-[#F6E7C6] mb-6">
           Why Cinéa?

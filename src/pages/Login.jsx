@@ -1,26 +1,33 @@
 import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 import api from "../api/axios";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { loginUser } = useContext(AuthContext);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
-  const { loginUser } = useContext(AuthContext);
+  const [loading, setLoading] = useState(false); 
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
     try {
+      setLoading(true);
+      setMessage("");
+
       const res = await api.post("/auth/login", { email, password });
       loginUser(res.data.user);
+
       setMessage("Login successful! Redirecting...");
-      setTimeout(() => navigate("/home"), 100);
+      setTimeout(() => navigate("/home"), 200);
     } catch (err) {
-      setMessage(err.response?.data?.message || "Login failed! Try again.");
+      setMessage(err.response?.data?.msg || "Login failed! Try again."); 
+    } finally {
+      setLoading(false);  
     }
   };
 
@@ -52,21 +59,25 @@ const Login = () => {
 
           <button
             type="submit"
-            className="w-full bg-[#FF7A1A] hover:bg-[#f6f6f6] text-black font-semibold py-2 rounded-md transition"
+            disabled={loading} // 🔥 Disable during login
+            className={`w-full font-semibold py-2 rounded-md transition 
+              ${loading ? "bg-gray-600 cursor-not-allowed" : "bg-[#FF7A1A] hover:bg-[#f6f6f6] text-black"}`}
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
         {message && (
           <p className="text-center text-sm text-[#FF7A1A] mt-4">{message}</p>
         )}
+
         <Link
           to="/forgot-password"
           className="text-xs text-slate-400 hover:text-white"
         >
           Forgot Password?
         </Link>
+
         <p className="text-center text-gray-400 text-sm mt-4">
           Don’t have an account?{" "}
           <Link to="/signup" className="text-[#FF7A1A] hover:underline">

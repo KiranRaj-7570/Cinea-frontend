@@ -31,11 +31,11 @@ const EditProfileModal = ({ isOpen, onClose, user, onUpdate }) => {
 
   return (
     <Transition show={isOpen} as={Fragment}>
-      {/* Background Overlay */}
+      
       <Dialog as="div" className="relative z-50" onClose={onClose}>
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" aria-hidden="true" />
 
-        {/* Centered Modal */}
+    
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Transition.Child
             as={Fragment}
@@ -58,7 +58,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onUpdate }) => {
               </p>
 
               <form onSubmit={handleSubmit} className="mt-5 space-y-4">
-                {/* Name */}
+                
                 <div>
                   <label className="text-xs text-slate-300">Name</label>
                   <input
@@ -70,7 +70,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onUpdate }) => {
                   />
                 </div>
 
-                {/* Bio */}
+           
                 <div>
                   <label className="text-xs text-slate-300">Bio</label>
                   <textarea
@@ -82,12 +82,8 @@ const EditProfileModal = ({ isOpen, onClose, user, onUpdate }) => {
                   />
                 </div>
 
-                {/* Future Avatar Upload Section */}
-                <div className="bg-slate-900/60 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-400">
-                  Avatar upload coming soon 🎭
-                </div>
 
-                {/* Action Buttons */}
+             
                 <div className="flex justify-end gap-3 pt-2">
                   <button
                     type="button"

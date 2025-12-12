@@ -12,26 +12,26 @@ import Booking from "./pages/Booking";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import Profile from "./pages/Profile";
 import ForgotPassword from "./pages/ForgotPassword";
+import SearchPage from "./pages/SearchPage";
+import MovieDetails from "./pages/MovieDetails";
+import TvDetails from "./pages/TvDetails";
 function App() {
   const { user } = useContext(AuthContext);
 
   return (
     <Routes>
-
-    
       <Route path="/" element={<Landing />} />
-      
+
       <Route
         path="/login"
         element={!user ? <Login /> : <Navigate to="/home" replace />}
       />
-      
+
       <Route
         path="/signup"
         element={!user ? <Signup /> : <Navigate to="/home" replace />}
       />
 
-     
       <Route
         path="/home"
         element={
@@ -77,6 +77,16 @@ function App() {
       />
       <Route path="/forgot-password" element={<ForgotPassword />} />
 
+      <Route
+        path="/search"
+        element={
+          <ProtectedRoute>
+            <SearchPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="/movie/:id" element={<MovieDetails />} />
+      <Route path="/series/:id" element={<TvDetails />} />
     </Routes>
   );
 }

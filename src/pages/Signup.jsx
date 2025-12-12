@@ -18,7 +18,7 @@ const Signup = () => {
     try {
       const res = await api.post("/auth/signup", { name, email, password });
 
-      loginUser(res.data.user); // << IMPORTANT
+      loginUser(res.data.user); 
 
       setMessage("Signup successful! Redirecting...");
       setTimeout(() => navigate("/home"), 1000);
