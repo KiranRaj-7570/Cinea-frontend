@@ -204,6 +204,7 @@ const EpisodesTab = ({
       totalEpisodesForSeason: total,
     });
     if (res?.data?.progress) setProgress(res.data.progress);
+    onToast(res.data.message || "Progress updated");
   } catch (err) {
     console.error("Toggle ep err", err);
     onToast("Failed to update progress");
