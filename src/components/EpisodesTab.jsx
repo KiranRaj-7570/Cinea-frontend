@@ -93,7 +93,7 @@ const EpisodesTab = ({
     if (seasonDetails[seasonNumber]) return; 
     setLoadingEp(true);
     try {
-      const res = await api.get(`/shows/${tmdbId}/season/${seasonNumber}`);
+      const res = await api.get(`/tvshows/${tmdbId}/season/${seasonNumber}`);
 
       if (!isMounted.current) return;
 

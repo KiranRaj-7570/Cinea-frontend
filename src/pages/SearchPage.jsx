@@ -58,7 +58,7 @@ const SearchPage = () => {
 
         const [movieRes, tvRes] = await Promise.all([
           api.get(`/movies/search?query=${encodeURIComponent(query)}`),
-          api.get(`/shows/search?query=${encodeURIComponent(query)}`),
+          api.get(`/tvshows/search?query=${encodeURIComponent(query)}`),
         ]);
 
         const movies = (movieRes.data.results || []).map((m) => ({

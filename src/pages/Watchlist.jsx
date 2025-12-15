@@ -6,12 +6,19 @@ import Footer from "../components/Footer";
 import Toast from "../components/Toast";
 import { AuthContext } from "../context/AuthContext";
 
+const TABS = [
+  { key: "watchlist", label: "Watchlist" },
+  { key: "continue", label: "Continue Watching" },
+  { key: "completed", label: "Completed" },
+];
+
 const Watchlist = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+
   const [items, setItems] = useState([]);
+  const [activeTab, setActiveTab] = useState("watchlist");
   const [toast, setToast] = useState({ show: false, message: "" });
-  const [progressMap, setProgressMap] = useState({}); // tmdbId → progress
 
   const showToast = (msg) => setToast({ show: true, message: msg });
 
@@ -22,37 +29,28 @@ const Watchlist = () => {
   const load = async () => {
     try {
       const res = await api.get("/watchlist");
-      const list = res.data.items || [];
-      setItems(list);
-
-      // Load series progress for each tv item
-      const map = {};
-      for (const it of list) {
-        if (it.mediaType === "tv") {
-          try {
-            const p = await api.get(`/progress/tv/${it.tmdbId}`);
-            map[it.tmdbId] = p.data.progress || null;
-          } catch {}
-        }
-      }
-      setProgressMap(map);
-
+      setItems(res.data.items || []);
     } catch (err) {
       console.error("Watchlist load error", err);
-      showToast("Failed loading watchlist");
+      showToast("Failed to load watchlist");
     }
   };
 
   const remove = async (tmdbId, mediaType) => {
     try {
       await api.delete(`/watchlist/${mediaType}/${tmdbId}`);
-      setItems((prev) => prev.filter((i) => !(i.tmdbId === tmdbId && i.mediaType === mediaType)));
+      setItems((prev) =>
+        prev.filter(
+          (i) => !(i.tmdbId === tmdbId && i.mediaType === mediaType)
+        )
+      );
       showToast("Removed from watchlist");
-    } catch (err) {
-      console.error("Remove err", err);
+    } catch {
       showToast("Failed to remove");
     }
   };
+
+  const filteredItems = items.filter((i) => i.status === activeTab);
 
   const handleNavigate = (item) => {
     if (item.mediaType === "tv") navigate(`/series/${item.tmdbId}`);
@@ -64,18 +62,53 @@ const Watchlist = () => {
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 pt-28 pb-12">
-        <h1 className="text-3xl font-bold mb-6 text-[#F6E7C6]">Your Watchlist</h1>
+        <h1 className="text-3xl font-bold mb-6 text-[#F6E7C6]">
+          Your Watchlist
+        </h1>
 
-        {items.length === 0 ? (
-          <p className="text-slate-400 text-lg">Your watchlist is empty.</p>
+        {/* ===== TABS ===== */}
+        <div className="relative mb-8">
+          <div className="flex gap-8 border-b border-slate-800">
+            {TABS.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`pb-3 text-sm font-semibold transition ${
+                  activeTab === tab.key
+                    ? "text-[#FF7A1A]"
+                    : "text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* SLIDER */}
+          <div
+            className="absolute bottom-0 h-[2px] bg-[#FF7A1A] transition-all duration-300"
+            style={{
+              width: "120px",
+              left:
+                activeTab === "watchlist"
+                  ? "0px"
+                  : activeTab === "continue"
+                  ? "140px"
+                  : "340px",
+            }}
+          />
+        </div>
+
+        {/* ===== CONTENT ===== */}
+        {filteredItems.length === 0 ? (
+          <p className="text-slate-400 text-lg">
+            Nothing here yet.
+          </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {items.map((item) => {
-              const progress = progressMap[item.tmdbId];
-              const hasProgress = progress && progress.lastWatched;
-
-              const isTV = item.mediaType === "tv";
-              const poster = item.poster || item.backdrop || "/no-poster.png";
+            {filteredItems.map((item) => {
+              const poster =
+                item.poster || item.backdrop || "/no-poster.png";
 
               return (
                 <div
@@ -83,7 +116,7 @@ const Watchlist = () => {
                   className="relative group cursor-pointer"
                   onClick={() => handleNavigate(item)}
                 >
-                  {/* Remove button */}
+                  {/* REMOVE */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -94,21 +127,11 @@ const Watchlist = () => {
                     ✕
                   </button>
 
-                  {/* Card */}
-                  <div
-                    className="
-                      rounded-xl overflow-hidden border border-slate-800
-                      bg-[#181818] shadow-lg
-                      group-hover:border-[#FF7A1A] transition-all duration-300
-                    "
-                  >
+                  <div className="rounded-xl overflow-hidden border border-slate-800 bg-[#181818] hover:border-[#FF7A1A] transition">
                     <img
                       src={poster}
                       alt={item.title}
-                      className={`
-                        w-full object-cover 
-                        ${isTV ? "h-[150px] md:h-[190px]" : "h-[220px] md:h-[260px]"}
-                      `}
+                      className="w-full h-[220px] object-cover"
                     />
 
                     <div className="p-3">
@@ -120,29 +143,21 @@ const Watchlist = () => {
                         {item.mediaType}
                       </p>
 
-                      {/* Series progress */}
-                      {isTV && hasProgress && (
-                        <div className="mt-2">
-                          <p className="text-xs text-slate-300 mb-1">
-                            Continue S{progress.lastWatched.season} • Ep {progress.lastWatched.episode}
+                      {/* CONTINUE WATCHING INFO */}
+                      {activeTab === "continue" &&
+                        item.mediaType === "tv" &&
+                        item.progress?.lastWatched && (
+                          <p className="mt-2 text-xs text-[#FF7A1A]">
+                            Continue S{item.progress.lastWatched.season} • Ep{" "}
+                            {item.progress.lastWatched.episode}
                           </p>
+                        )}
 
-                          {/* Progress bar */}
-                          <div className="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-[#FF7A1A]"
-                              style={{
-                                width:
-                                  (progress.lastWatched.episode /
-                                    (progress.seasons?.find(
-                                      (s) => s.seasonNumber === progress.lastWatched.season
-                                    )?.totalEpisodes || 1)) *
-                                    100 +
-                                  "%",
-                              }}
-                            />
-                          </div>
-                        </div>
+                      {/* COMPLETED BADGE */}
+                      {activeTab === "completed" && (
+                        <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded-full bg-green-500/10 text-green-400">
+                          Completed
+                        </span>
                       )}
                     </div>
                   </div>

@@ -49,21 +49,21 @@ const Explore = () => {
         {/* TV SECTION */}
         <Row
           title="Trending Series"
-          fetchUrl="/shows/trending"
+          fetchUrl="/tvshows/trending"
           cardType="backdrop"
           onSelect={handleSelect}
         />
 
         <Row
           title="Popular Series"
-          fetchUrl="/shows/popular"
+          fetchUrl="/tvshows/popular"
           cardType="backdrop"
           onSelect={handleSelect}
         />
 
         <Row
           title="Top Rated Series"
-          fetchUrl="/shows/top-rated"
+          fetchUrl="/tvshows/top-rated"
           cardType="backdrop"
           onSelect={handleSelect}
         />

@@ -15,36 +15,35 @@ const WatchlistButton = ({
   const [inList, setInList] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  
+  /* FORCE OVERRIDE */
   useEffect(() => {
-    if (forceInList === true) {
-      setInList(true);
-    } else if (forceInList === false) {
-      setInList(false);
-    }
+    if (forceInList === true) setInList(true);
+    if (forceInList === false) setInList(false);
   }, [forceInList]);
 
- 
+  /* CHECK WATCHLIST */
   useEffect(() => {
+    if (!user) {
+      setInList(false);
+      return;
+    }
+
     let mounted = true;
+
     const check = async () => {
-      if (!user) {
-        if (mounted) setInList(false);
-        return;
-      }
       try {
         const res = await api.get("/watchlist");
-        const items = res.data.items || [];
-        const found = items.some(
-          (it) =>
-            Number(it.tmdbId) === Number(tmdbId) &&
-            (it.mediaType || it.media_type) === mediaType
+        const found = res.data.items?.some(
+          (i) =>
+            Number(i.tmdbId) === Number(tmdbId) &&
+            i.mediaType === mediaType
         );
         if (mounted) setInList(Boolean(found));
       } catch (err) {
         console.error("Watchlist check error:", err);
       }
     };
+
     check();
     return () => (mounted = false);
   }, [tmdbId, mediaType, user]);
@@ -73,10 +72,12 @@ const WatchlistButton = ({
   };
 
   const remove = async () => {
-    if (!user) return onToast("Login to remove");
+    if (!user) return onToast("Login required");
     setLoading(true);
     try {
-      const res = await api.delete(`/watchlist/${mediaType}/${tmdbId}`);
+      const res = await api.delete(
+        `/watchlist/${mediaType}/${tmdbId}`
+      );
       setInList(false);
       onToast(res.data?.message || "Removed from watchlist");
     } catch (err) {
@@ -86,26 +87,22 @@ const WatchlistButton = ({
     }
   };
 
-  return (
-    <div>
-      {!inList ? (
-        <button
-          onClick={add}
-          disabled={loading}
-          className="px-4 py-2 rounded-full bg-[#FF7A1A] hover:bg-[#f56c08] text-black font-semibold"
-        >
-          {loading ? "..." : "+ Add to Watchlist"}
-        </button>
-      ) : (
-        <button
-          onClick={remove}
-          disabled={loading}
-          className="px-3 py-2 rounded-full bg-[#0F3E21] border border-green-500 text-green-300 font-semibold"
-        >
-          {loading ? "..." : "✓ In Watchlist"}
-        </button>
-      )}
-    </div>
+  return !inList ? (
+    <button
+      onClick={add}
+      disabled={loading}
+      className="px-4 py-2 rounded-full bg-[#FF7A1A] hover:bg-[#f56c08] text-black font-semibold"
+    >
+      {loading ? "..." : "+ Add to Watchlist"}
+    </button>
+  ) : (
+    <button
+      onClick={remove}
+      disabled={loading}
+      className="px-4 py-2 rounded-full bg-[#0F3E21] border border-green-500 text-green-300 font-semibold"
+    >
+      {loading ? "..." : "✓ In Watchlist"}
+    </button>
   );
 };
 

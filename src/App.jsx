@@ -15,6 +15,11 @@ import ForgotPassword from "./pages/ForgotPassword";
 import SearchPage from "./pages/SearchPage";
 import MovieDetails from "./pages/MovieDetails";
 import TvDetails from "./pages/TvDetails";
+
+import BookingSuccess from "./pages/BookingSuccess";
+import BookShowPage from "./pages/BookShowPage";
+import SeatSelectionPage from "./pages/SeatSelectionPage";
+import PaymentPage from "./pages/PaymentPage";
 function App() {
   const { user } = useContext(AuthContext);
 
@@ -87,6 +92,18 @@ function App() {
       />
       <Route path="/movie/:id" element={<MovieDetails />} />
       <Route path="/series/:id" element={<TvDetails />} />
+      <Route path="/book/:movieId" element={<BookShowPage />} />
+      <Route
+  path="/book/:movieId/seats/:showId"
+  element={
+    <ProtectedRoute>
+      <SeatSelectionPage />
+    </ProtectedRoute>
+  }
+/>
+      <Route path="/book/payment/:bookingId" element={<PaymentPage />} />
+
+      <Route path="/booking/success/:bookingId" element={<BookingSuccess />} />
     </Routes>
   );
 }

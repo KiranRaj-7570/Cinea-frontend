@@ -20,7 +20,7 @@ const TvDetails = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await api.get(`/shows/details/${id}`);
+        const res = await api.get(`/tvshows/details/${id}`);
         setDetails(res.data);
       } catch (err) {
         console.error("Load show err", err);
@@ -194,7 +194,7 @@ const TvDetails = () => {
               <h3 className="text-xl font-semibold mb-3">More like this</h3>
               <Row
                 title=""
-                fetchUrl={`/shows/similar/${id}`}
+                fetchUrl={`/tvshows/similar/${id}`}
                 onSelect={handleSelect}
               />
             </div>
@@ -211,7 +211,6 @@ const TvDetails = () => {
             }
             onToast={showToast}
             inWatchlist={inWatchlist}
-            onWatchlistChange={setInWatchlist}
           />
         )}
 
@@ -224,6 +223,7 @@ const TvDetails = () => {
             }
             title={name}
             onToast={showToast}
+           
           />
         )}
       </div>
