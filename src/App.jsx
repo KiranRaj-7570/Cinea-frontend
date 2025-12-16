@@ -20,13 +20,14 @@ import BookingSuccess from "./pages/BookingSuccess";
 import BookShowPage from "./pages/BookShowPage";
 import SeatSelectionPage from "./pages/SeatSelectionPage";
 import PaymentPage from "./pages/PaymentPage";
+import AdminRoutes from "./routes/adminRoutes";
 function App() {
   const { user } = useContext(AuthContext);
 
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
-
+      <Route path="/admin/*" element={<AdminRoutes />} />
       <Route
         path="/login"
         element={!user ? <Login /> : <Navigate to="/home" replace />}
