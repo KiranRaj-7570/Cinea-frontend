@@ -216,17 +216,17 @@ const Navbar = () => {
 
       {/* DESKTOP RIGHT */}
       <div className="hidden lg:flex items-center gap-8">
-        <div className="flex gap-10 reem-kufi font-semibold">
-          <NavLink to="/home" className="text-[#F6E7C6]">
+        <div className="flex gap-10 reem-kufi font-semibold ">
+          <NavLink to="/home" className="text-[#F6E7C6] hover:text-orange-400 transition">
             Home
           </NavLink>
-          <NavLink to="/explore" className="text-[#F6E7C6]">
+          <NavLink to="/explore" className="text-[#F6E7C6] hover:text-orange-400 transition">
             Explore
           </NavLink>
-          <NavLink to="/watchlist" className="text-[#F6E7C6]">
+          <NavLink to="/watchlist" className="text-[#F6E7C6] hover:text-orange-400 transition">
             Watchlist
           </NavLink>
-          <NavLink to="/booking" className="text-[#F6E7C6]">
+          <NavLink to="/booking" className="text-[#F6E7C6] hover:text-orange-400 transition">
             Book Show
           </NavLink>
         </div>
@@ -234,13 +234,13 @@ const Navbar = () => {
         {user?.role === "admin" && (
           <button
             onClick={() => navigate("/admin")}
-            className="px-4 py-1 border border-[#FF7A1A] rounded-full text-[#F6E7C6]"
+            className="px-4 py-1 reem-kufi  text-[#F6E7C6] hover:text-orange-400 transition"
           >
             Admin
           </button>
         )}
 
-        <FiBell size={22} className="text-[#F6E7C6]" />
+        <FiBell size={22} className="text-[#F6E7C6] hover:text-orange-400 transition" />
 
         {/* PROFILE AVATAR (RESTORED) */}
         {user && (
@@ -291,6 +291,9 @@ const Navbar = () => {
 
           <button onClick={() => navigate("/profile")} className="text-left">
             Profile
+          </button>
+          <button onClick={() => navigate("/my-bookings")} className="text-left">
+            My Bookings
           </button>
           <button onClick={handleLogout} className="text-left text-red-400">
             Logout

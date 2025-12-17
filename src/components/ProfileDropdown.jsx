@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { Ticket, LogOut } from "lucide-react";
+import { Ticket, LogOut, User } from "lucide-react";
 import avatarPlaceholder from "../assets/avatar.png";
 
 const ProfileDropdown = ({ onClose }) => {
@@ -9,7 +9,7 @@ const ProfileDropdown = ({ onClose }) => {
   const { user, logoutUser } = useContext(AuthContext);
 
   return (
-    <div className="absolute right-0 mt-3 w-64 rounded-xl bg-zinc-900 border border-zinc-800 shadow-xl overflow-hidden z-50">
+    <div className="absolute right-0 mt-4 w-64 rounded-xl bg-zinc-900 border border-zinc-800 shadow-xl overflow-hidden z-50">
 
       {/* 👤 Profile Info */}
       <div className="flex items-center gap-3 px-4 py-4">
@@ -31,6 +31,18 @@ const ProfileDropdown = ({ onClose }) => {
       <div className="h-px bg-zinc-800" />
 
       {/* 🎟 My Bookings */}
+      <button
+        onClick={() => {
+          navigate("/profile");
+          onClose?.();
+        }}
+        className="flex items-center gap-3 w-full px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800 transition"
+      >
+        <User size={18} />
+        My Profile
+      </button>
+
+      <div className="h-px bg-zinc-800" />
       <button
         onClick={() => {
           navigate("/my-bookings");
