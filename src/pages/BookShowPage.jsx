@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import CityPicker from "../components/CityPicker";
@@ -8,17 +8,30 @@ import api from "../api/axios";
 
 const BookShowPage = () => {
   const { movieId } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-
+  const dateFromUrl = searchParams.get("date");
+  const cityFromUrl = searchParams.get("city");
+  const [dateHasShows, setDateHasShows] = useState({});
   const [movie, setMovie] = useState(null);
-  const [city, setCity] = useState("Chennai");
-  const [date, setDate] = useState(new Date());
+  const [city, setCity] = useState(cityFromUrl || "Chennai");
+  const normalizeDate = (d) => {
+    const x = new Date(d);
+    x.setHours(0, 0, 0, 0);
+    return x;
+  };
+
+  const [date, setDate] = useState(
+    dateFromUrl ? normalizeDate(dateFromUrl) : normalizeDate(new Date())
+  );
   const [theatres, setTheatres] = useState([]);
 
   useEffect(() => {
     loadMovie();
   }, [movieId]);
-
+  useEffect(() => {
+    setDateHasShows({});
+  }, [city, movieId]);
   useEffect(() => {
     loadShows();
   }, [city, date]);
@@ -29,14 +42,24 @@ const BookShowPage = () => {
   };
 
   const loadShows = async () => {
-    const formattedDate = date.toISOString().split("T")[0]; // ✅ YYYY-MM-DD
+  const formattedDate = date.toLocaleDateString("en-CA");
 
-    const res = await api.get(
-      `/shows/movie/${movieId}?city=${city}&date=${formattedDate}`
-    );
+  const res = await api.get(
+    `/shows/movie/${movieId}?city=${city}&date=${formattedDate}`
+  );
 
-    setTheatres(res.data);
-  };
+  setTheatres(res.data);
+
+  // 🔥 ONLY mark false if empty
+  setDateHasShows((prev) => {
+    if (res.data.length === 0) {
+      return { ...prev, [formattedDate]: false };
+    }
+    return prev;
+  });
+};
+
+
   useEffect(() => {
     console.log("Theatres:", theatres);
   }, [theatres]);
@@ -65,12 +88,12 @@ const BookShowPage = () => {
       <div className="max-w-6xl mx-auto px-6 mt-8 space-y-6">
         {theatres.map((theatre) => (
           <TheatreCard
-  key={theatre.theatreId}
-  theatre={theatre}
-  onSelectShow={(showId) =>
-    navigate(`/book/${movieId}/seats/${showId}`)
-  }
-/>
+            key={theatre.theatreId}
+            theatre={theatre}
+            onSelectShow={(showId) =>
+              navigate(`/book/${movieId}/seats/${showId}`)
+            }
+          />
         ))}
       </div>
     </div>

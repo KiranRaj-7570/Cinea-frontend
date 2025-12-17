@@ -70,7 +70,7 @@ const GenreDonutChart = ({ data = [], loading }) => {
               dataKey="value"
               nameKey="label"
               innerRadius={60}
-              outerRadius={90}
+              outerRadius={80}
               paddingAngle={3}
               label={({ percent }) => `${Math.round(percent * 100)}%`}
               labelLine={false}

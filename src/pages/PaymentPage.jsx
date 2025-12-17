@@ -36,7 +36,7 @@ const PaymentPage = () => {
             razorpay_signature: response.razorpay_signature,
           });
 
-          navigate(`/booking/success/${bookingId}`, { replace: true });
+          navigate(`/booking/ticket/${bookingId}`, { replace: true });
         } catch {
           alert("Payment verification failed");
           navigate(`/book/${movieId}/seats/${showId}`, { replace: true });

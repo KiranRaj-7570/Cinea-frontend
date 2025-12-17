@@ -8,7 +8,6 @@ import Signup from "./pages/Signup";
 import Home from "./pages/Home";
 import Explore from "./pages/Explore";
 import Watchlist from "./pages/Watchlist";
-import Booking from "./pages/Booking";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import Profile from "./pages/Profile";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -16,11 +15,14 @@ import SearchPage from "./pages/SearchPage";
 import MovieDetails from "./pages/MovieDetails";
 import TvDetails from "./pages/TvDetails";
 
-import BookingSuccess from "./pages/BookingSuccess";
+
 import BookShowPage from "./pages/BookShowPage";
 import SeatSelectionPage from "./pages/SeatSelectionPage";
 import PaymentPage from "./pages/PaymentPage";
 import AdminRoutes from "./routes/adminRoutes";
+import BookMoviesPage from "./pages/BookMoviesPage";
+import MyBookings from "./pages/MyBookings";
+import TicketPage from "./pages/TicketPage";
 function App() {
   const { user } = useContext(AuthContext);
 
@@ -69,7 +71,7 @@ function App() {
         path="/booking"
         element={
           <ProtectedRoute>
-            <Booking />
+            <BookMoviesPage />
           </ProtectedRoute>
         }
       />
@@ -104,7 +106,9 @@ function App() {
 />
       <Route path="/book/payment/:bookingId" element={<PaymentPage />} />
 
-      <Route path="/booking/success/:bookingId" element={<BookingSuccess />} />
+      <Route path="/booking/ticket/:bookingId" element={<TicketPage />} />
+
+      <Route path="/my-bookings" element={<MyBookings/>} />
     </Routes>
   );
 }
