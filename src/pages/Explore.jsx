@@ -15,7 +15,7 @@ const Explore = () => {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-[rgba(80,80,80,0.7)] to-[#070707] text-white">
+    <div className="min-h-screen bg-linear-to-b from-[#2f2f2f] via-[#111] to-[#141414] text-white">
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 pt-28 pb-10">
@@ -24,6 +24,7 @@ const Explore = () => {
         <h1 className="text-3xl  tracking-wide mb-6  anton text-[#F6E7C6]">
           Explore Movies & Series
         </h1>
+        <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen h-[5px] bg-black/20 shadow-md mt-5 mb-5" />
 
         <Row
           title="Trending Movies"

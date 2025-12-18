@@ -10,6 +10,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 
 const Row = ({ title, fetchUrl, cardType = "poster", onSelect }) => {
+  const [loading, setLoading] = useState(true);
   const [items, setItems] = useState([]);
   const [showLeftFade, setShowLeftFade] = useState(false);
   const [showRightFade, setShowRightFade] = useState(true);
@@ -24,10 +25,10 @@ const Row = ({ title, fetchUrl, cardType = "poster", onSelect }) => {
   const SPACE_BETWEEN = 18;
   const ARROW_SCROLL_SPEED_MS = 700;
 
-  
   useEffect(() => {
     const load = async () => {
       try {
+        setLoading(true);
         const res = await api.get(fetchUrl);
         const filtered = (res.data?.results || []).filter((i) =>
           cardType === "poster" ? i.poster_path : i.backdrop_path
@@ -35,6 +36,8 @@ const Row = ({ title, fetchUrl, cardType = "poster", onSelect }) => {
         setItems(filtered);
       } catch (err) {
         console.error("Row fetch failed:", err.message);
+      } finally {
+        setLoading(false);
       }
     };
     load();
@@ -71,16 +74,15 @@ const Row = ({ title, fetchUrl, cardType = "poster", onSelect }) => {
       >
         {title}
       </h2>
-      
+
       <div className="relative overflow-x-clip px-2">
-        
         {/* Left Fade */}
         <div
           className={`absolute left-0 top-0 bottom-0 w-15 z-30 overflow-y-visible pointer-events-none transition-opacity duration-300 bg-linear-to-b from-[rgba(80,80,80,0.7)] to-[#070707] ${
-            showLeftFade ? "opacity-100" : "opacity-0" 
+            showLeftFade ? "opacity-100" : "opacity-0"
           }`}
           style={{
-            background: "linear-gradient(90deg, #000000, transparent)"
+            background: "linear-gradient(90deg, #000000, transparent)",
           }}
         />
 
@@ -90,7 +92,7 @@ const Row = ({ title, fetchUrl, cardType = "poster", onSelect }) => {
             showRightFade ? "opacity-100" : "opacity-0"
           }`}
           style={{
-            background: "linear-gradient(270deg, #000000, transparent)"
+            background: "linear-gradient(270deg, #000000, transparent)",
           }}
         />
 
@@ -125,64 +127,81 @@ const Row = ({ title, fetchUrl, cardType = "poster", onSelect }) => {
           style={{ overflow: "visible" }}
         >
           {/* Slide Items */}
-          {items.map((item) => (
-            <SwiperSlide
-              key={item.id}
-              style={{
-                width: SLIDE_SIZE + "px",
-                overflow: "visible",
-              }}
-            >
-              {cardType === "poster" ? (
-                <PosterCard item={item} onClick={onSelect} />
-              ) : (
-                <BackdropCard item={item} onClick={onSelect} />
-              )}
-            </SwiperSlide>
-          ))}
+          {loading
+            ? Array.from({ length: 8 }).map((_, i) => (
+                <SwiperSlide
+                  key={`skeleton-${i}`}
+                  style={{ width: SLIDE_SIZE + "px", overflow: "visible" }}
+                >
+                  {/* SKELETON CARD */}
+                  <div className="animate-pulse">
+                    {cardType === "poster" ? (
+                      <div className="w-full h-[260px] rounded-lg bg-slate-700/40" />
+                    ) : (
+                      <div className="w-full h-[190px] rounded-lg bg-slate-700/40" />
+                    )}
+
+                    <div className="mt-2 space-y-2 px-1">
+                      <div className="h-4 w-3/4 bg-slate-600/40 rounded" />
+                      <div className="h-3 w-1/2 bg-slate-600/30 rounded" />
+                    </div>
+                  </div>
+                </SwiperSlide>
+              ))
+            : items.map((item) => (
+                <SwiperSlide
+                  key={item.id}
+                  style={{ width: SLIDE_SIZE + "px", overflow: "visible" }}
+                >
+                  {cardType === "poster" ? (
+                    <PosterCard item={item} onClick={onSelect} />
+                  ) : (
+                    <BackdropCard item={item} onClick={onSelect} />
+                  )}
+                </SwiperSlide>
+              ))}
         </Swiper>
 
         <button
-  ref={prevRef}
-  className={`absolute left-2 top-1/2 -translate-y-1/2 z-40 text-[#FF7A1A] text-8xl font-extralight w-10 h-10 flex items-center justify-center transition-opacity duration-300 ${
-    !showLeftFade ? "opacity-0 pointer-events-none" : "opacity-100"
-  }`}
-  onClick={() => {
-    const swiper = swiperRef.current;
-    if (!swiper) return;
+          ref={prevRef}
+          className={`absolute left-2 top-1/2 -translate-y-1/2 z-40 text-[#FF7A1A] text-8xl font-extralight w-10 h-10 flex items-center justify-center transition-opacity duration-300 ${
+            !showLeftFade ? "opacity-0 pointer-events-none" : "opacity-100"
+          }`}
+          onClick={() => {
+            const swiper = swiperRef.current;
+            if (!swiper) return;
 
-    const step = computeStep(swiper); // auto choose 3–4 based on screen
-    const target = Math.max(0, swiper.activeIndex - step);
+            const step = computeStep(swiper); // auto choose 3–4 based on screen
+            const target = Math.max(0, swiper.activeIndex - step);
 
-    swiper.slideTo(target, ARROW_SCROLL_SPEED_MS);
-    setInteracting(true);
-  }}
->
-  ‹
-</button>
+            swiper.slideTo(target, ARROW_SCROLL_SPEED_MS);
+            setInteracting(true);
+          }}
+        >
+          ‹
+        </button>
 
+        <button
+          ref={nextRef}
+          className={`absolute right-2 top-1/2 -translate-y-1/2 z-40 text-[#FF7A1A] text-8xl font-extralight w-10 h-10 flex items-center justify-center transition-opacity duration-300 ${
+            !showRightFade ? "opacity-0 pointer-events-none" : "opacity-100"
+          }`}
+          onClick={() => {
+            const swiper = swiperRef.current;
+            if (!swiper) return;
 
-<button
-  ref={nextRef}
-  className={`absolute right-2 top-1/2 -translate-y-1/2 z-40 text-[#FF7A1A] text-8xl font-extralight w-10 h-10 flex items-center justify-center transition-opacity duration-300 ${
-    !showRightFade ? "opacity-0 pointer-events-none" : "opacity-100"
-  }`}
-  onClick={() => {
-    const swiper = swiperRef.current;
-    if (!swiper) return;
+            const step = computeStep(swiper); // auto choose 3–4 based on screen
+            const target = Math.min(
+              swiper.slides.length - 1,
+              swiper.activeIndex + step
+            );
 
-    const step = computeStep(swiper); // auto choose 3–4 based on screen
-    const target = Math.min(
-      swiper.slides.length - 1,
-      swiper.activeIndex + step
-    );
-
-    swiper.slideTo(target, ARROW_SCROLL_SPEED_MS);
-    setInteracting(true);
-  }}
->
-  ›
-</button>
+            swiper.slideTo(target, ARROW_SCROLL_SPEED_MS);
+            setInteracting(true);
+          }}
+        >
+          ›
+        </button>
       </div>
     </div>
   );

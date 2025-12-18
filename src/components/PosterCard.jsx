@@ -1,3 +1,4 @@
+import { StarIcon } from "lucide-react";
 import React from "react";
 
 const IMG = "https://image.tmdb.org/t/p/w342";
@@ -33,7 +34,7 @@ const PosterCard = ({ item, onClick }) => {
           </p>
           <p className="text-xs text-slate-400 ">{year}</p>
           <p className="text-xs text-yellow-400 ">
-            ⭐ {item.vote_average?.toFixed(1)}
+            <StarIcon className="inline mr-1 border-0 outline-0 mb-1" size={14} color="#ffd500" fill="#ffd500"/> {item.vote_average?.toFixed(1)}
           </p>
         </div>
       </div>

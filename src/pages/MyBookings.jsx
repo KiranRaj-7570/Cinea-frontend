@@ -2,75 +2,92 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
+import BookingCard from "../components/BookingCard";
+import ConfirmModal from "../components/ConfirmModal";
+import Toast from "../components/Toast";
+import BookingCardSkeleton from "../components/Skeletons/BookingCardSkeleton";
 
 const MyBookings = () => {
   const [bookings, setBookings] = useState([]);
+  const [confirmId, setConfirmId] = useState(null);
+  const [toast, setToast] = useState("");
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    api.get("/booking/my").then((res) => setBookings(res.data));
+    loadBookings();
   }, []);
 
+  const loadBookings = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get(`/booking/my?ts=${Date.now()}`);
+      setBookings(res.data);
+    } catch (err) {
+      console.error("Load bookings error", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const cancelBooking = async () => {
+    try {
+      await api.post(`/booking/${confirmId}/cancel`);
+      setToast("Booking cancelled successfully");
+      setConfirmId(null);
+      loadBookings();
+    } catch (err) {
+      setToast(err.response?.data?.message || "Cancel failed");
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#111] text-white pt-16">
+    <div className="min-h-screen bg-linear-to-b from-[#2f2f2f] via-[#111] to-[#141414] text-white pt-16">
       <Navbar />
 
-      <div className="max-w-4xl mx-auto px-6 mt-8">
-        <h1 className="text-3xl font-bold mb-6">My Bookings</h1>
+      <div className="max-w-7xl mx-auto px-6 mt-12 pb-24">
+        <h1 className="text-3xl font-bold mb-6 anton text-[#F6E7C6]">My Bookings</h1>
+          <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen h-[5px] bg-black/20 shadow-md mt-5" />
 
-        {bookings.length === 0 && (
-          <p className="text-gray-400">No bookings yet.</p>
+        {/* 🔄 Skeleton */}
+        {loading && (
+          <div className="space-y-4 mt-5 max-w-5xl mx-auto">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <BookingCardSkeleton key={i} />
+            ))}
+          </div>
         )}
 
-        <div className="space-y-4">
-          {bookings.map((b) => (
-            <div
-              key={b.bookingId}
-              onClick={() =>
-                navigate(`/booking/ticket/${b.bookingId}`)
-              }
-              className="flex gap-4 bg-[#151515] p-4 rounded-xl cursor-pointer hover:bg-[#1c1c1c]"
-            >
-              {/* Poster */}
-              <img
-                src={`https://image.tmdb.org/t/p/w200${b.movie.poster}`}
-                className="w-20 h-28 object-cover rounded-lg"
-                alt={b.movie.title}
+        {/* ❌ Empty */}
+        {!loading && bookings.length === 0 && (
+          <p className="text-gray-400 text-center mt-20">No bookings yet.</p>
+        )}
+
+        {/* ✅ Data */}
+        {!loading && (
+          <div className="space-y-4 mt-5 max-w-5xl mx-auto">
+            {bookings.map((b) => (
+              <BookingCard
+                key={b.bookingId}
+                booking={b}
+                onOpen={() =>
+                  b.status !== "cancelled" &&
+                  navigate(`/booking/ticket/${b.bookingId}`)
+                }
+                onCancel={() => setConfirmId(b.bookingId)}
               />
-
-              {/* Info */}
-              <div className="flex-1">
-                <h3 className="font-semibold text-lg">
-                  {b.movie.title}
-                </h3>
-
-                <p className="text-sm text-gray-400">
-                  {b.show.theatre}
-                </p>
-
-                <p className="text-sm">
-                  {b.show.date} • {b.show.time}
-                </p>
-
-                <p className="text-sm mt-1">
-                  Seats: {b.seats.join(", ")}
-                </p>
-              </div>
-
-              {/* Status */}
-              <span
-                className={`self-start px-3 py-1 text-xs rounded-full ${
-                  b.status === "paid"
-                    ? "bg-green-600"
-                    : "bg-red-600"
-                }`}
-              >
-                {b.status.toUpperCase()}
-              </span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
+
+      <ConfirmModal
+        open={!!confirmId}
+        onCancel={() => setConfirmId(null)}
+        onConfirm={cancelBooking}
+      />
+
+      <Toast show={!!toast} message={toast} onClose={() => setToast("")} />
     </div>
   );
 };

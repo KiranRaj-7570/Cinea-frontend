@@ -7,6 +7,8 @@ import SeatLegend from "../components/SeatLegend";
 import ScreenBar from "../components/ScreenBar";
 import PriceBar from "../components/PriceBar";
 import Footer from "../components/Footer";
+import GoBackButton from "../components/GoBackButton";
+import SeatSelectionSkeleton from "../components/Skeletons/SeatSelectionSkeleton";
 
 const SeatSelectionPage = () => {
   const { showId, movieId } = useParams();
@@ -16,50 +18,58 @@ const SeatSelectionPage = () => {
   const [bookedSeats, setBookedSeats] = useState([]);
   const [lockedSeats, setLockedSeats] = useState([]);
   const [selectedSeats, setSelectedSeats] = useState([]);
+  const [layout, setLayout] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const loadShowInfo = async () => {
+useEffect(() => {
+  const loadShowInfo = async () => {
+    try {
+      setLoading(true);
       const res = await api.get(`/shows/${showId}`);
       setShowInfo(res.data);
-    };
+      setLayout(res.data.seatLayout.rows);
+      await loadSeats();
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    loadShowInfo();
-    loadSeats();
-  }, [showId]);
+  loadShowInfo();
+}, [showId]);
+
   const handleConfirm = async () => {
     if (confirming) return;
-  setConfirming(true);
-  try {
-    // 1️⃣ Lock seats first
-    await api.post(`/shows/${showId}/lock-seats`, {
-      seats: selectedSeats,
-    });
+    setConfirming(true);
+    try {
+      // 1️⃣ Lock seats first
+      await api.post(`/shows/${showId}/lock-seats`, {
+        seats: selectedSeats,
+      });
 
-    // 2️⃣ Create booking + Razorpay order
-    const res = await api.post("/booking/create", {
-      movieId: Number(movieId),
-      showId,
-      seats: selectedSeats,
-    });
+      // 2️⃣ Create booking + Razorpay order
+      const res = await api.post("/booking/create", {
+        movieId: Number(movieId),
+        showId,
+        seats: selectedSeats,
+      });
 
-    // 3️⃣ Go to payment page
-    navigate(`/book/payment/${res.data.bookingId}`, {
-  state: {
-    orderId: res.data.orderId,
-    amount: res.data.amount,
-    key: res.data.key,
-    movieId,
-    showId,
-  },
-});
-  } catch (err) {
-    await loadSeats(); // refresh seat state
-    alert(err.response?.data?.message || "Booking failed");
-  }finally {
-    setConfirming(false);
-  }
-};
-
+      // 3️⃣ Go to payment page
+      navigate(`/book/payment/${res.data.bookingId}`, {
+        state: {
+          orderId: res.data.orderId,
+          amount: res.data.amount,
+          key: res.data.key,
+          movieId,
+          showId,
+        },
+      });
+    } catch (err) {
+      await loadSeats(); // refresh seat state
+      alert(err.response?.data?.message || "Booking failed");
+    } finally {
+      setConfirming(false);
+    }
+  };
 
   const loadSeats = async () => {
     const res = await api.get(`/shows/${showId}/seats`);
@@ -86,10 +96,13 @@ const SeatSelectionPage = () => {
     });
   };
   return (
-    <div className="min-h-screen bg-linear-to-b from-black/85 via-[#0b0b0b] to-[#070707] text-white overflow-y-hidden max-w-screen">
+    <div className="min-h-screen bg-linear-to-b from-[#2f2f2f] via-[#111] to-[#141414] text-white overflow-y-hidden max-w-screen">
       <Navbar />
 
       <div className="pt-24 md:pt-28">
+        <div className="mb-4 px-6 md:px-16 lg:px-36">
+          <GoBackButton label="Go Back" />
+        </div>
         <h1 className="text-4xl text-[#FBF4E2] px-6 md:px-16 lg:px-36 anton mb-6">
           Choose Seats
         </h1>
@@ -110,18 +123,24 @@ const SeatSelectionPage = () => {
         </div>
 
         {/* Seat Grid */}
-        <SeatGrid
-          bookedSeats={bookedSeats}
-          lockedSeats={lockedSeats}
-          selectedSeats={selectedSeats}
-          setSelectedSeats={setSelectedSeats}
-        />
+       {loading ? (
+  <SeatSelectionSkeleton />
+) : (
+  <SeatGrid
+    layout={layout}
+    bookedSeats={bookedSeats}
+    lockedSeats={lockedSeats}
+    selectedSeats={selectedSeats}
+    setSelectedSeats={setSelectedSeats}
+  />
+)}
 
         <ScreenBar />
 
-        {selectedSeats.length > 0 && (
+        {selectedSeats.length > 0 && showInfo && (
           <PriceBar
             selectedSeats={selectedSeats}
+            priceMap={showInfo.priceMap}
             onBack={() => navigate(-1)}
             onConfirm={handleConfirm}
           />

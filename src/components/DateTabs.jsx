@@ -23,7 +23,7 @@ const DateTabs = ({ value, onChange }) => {
     return date.toDateString().slice(0, 10);
   };
 
-  // ✅ auto-scroll active date
+  // auto-scroll active date
   useEffect(() => {
     const active = containerRef.current?.querySelector(
       "[data-active='true']"
@@ -38,7 +38,7 @@ const DateTabs = ({ value, onChange }) => {
   return (
     <div
       ref={containerRef}
-      className="flex gap-3 overflow-x-auto no-scrollbar"
+      className="flex gap-3 overflow-x-auto no-scrollbar poppins-regular"
     >
       {days.map((d, idx) => {
         const isActive = isSameDay(d, value);
@@ -52,7 +52,7 @@ const DateTabs = ({ value, onChange }) => {
               ${
                 isActive
                   ? "bg-[#FF7A1A] text-black"
-                  : "bg-[#151515] text-white hover:border-[#FF7A1A]"
+                  : "bg-[#151515] text-white hover:border-[#FF7A1A] hover:bg-[#1c1c1c]"
               }`}
           >
             {getLabel(d, idx)}

@@ -1,13 +1,12 @@
-const ROWS = ["A", "B", "C", "D", "E", "F", "G", "H"];
-const SEATS_PER_ROW = 20;
-const MAX_SEATS = 10;
-
 const SeatGrid = ({
+  layout = [],
   bookedSeats,
   lockedSeats,
   selectedSeats,
   setSelectedSeats,
 }) => {
+  const MAX_SEATS = 10;
+
   const toggleSeat = (seatId) => {
     if (bookedSeats.includes(seatId) || lockedSeats.includes(seatId)) return;
 
@@ -20,69 +19,72 @@ const SeatGrid = ({
   };
 
   return (
-    <div
-      className="
-        mt-10
-        overflow-x-auto overflow-y-visible
-        pb-6
-      "
-    >
-      <div
-        className="
-          flex
-          justify-start lg:justify-center
-          gap-24
-          pl-8
-          pr-12 sm:pr-16 lg:pr-10
-        "
-      >
+    <div className="mt-10 overflow-x-auto pb-6">
+      <div className="flex justify-start lg:justify-center gap-24 px-8">
+        {/* 🔹 Two blocks (left & right) */}
         {[0, 1].map((block) => (
           <div key={block} className="space-y-3">
-            {ROWS.map((row) => (
-              <div key={row} className="flex items-center gap-3">
-                {/* Row label only on left */}
-                {block === 0 && (
-                  <span className="w-4 text-slate-400">{row}</span>
-                )}
-                {block === 1 && <span className="w-4" />}
+            {layout.map((row) => {
+              const half = Math.ceil(row.seats / 2);
+              const start = block === 0 ? 1 : half + 1;
+              const end =
+                block === 0 ? half : row.seats;
 
-                {[...Array(SEATS_PER_ROW / 2)].map((_, i) => {
-                  const seatNo = block === 0 ? i + 1 : i + 11;
-                  const seatId = `${row}${seatNo}`;
+              return (
+                <div key={row.row} className="flex items-center gap-3">
+                  {/* Row label only on left block */}
+                  {block === 0 && (
+                    <span className="w-4 text-slate-400">
+                      {row.row}
+                    </span>
+                  )}
+                  {block === 1 && <span className="w-4" />}
 
-                  const isBooked = bookedSeats.includes(seatId);
-                  const isLocked = lockedSeats.includes(seatId);
-                  const isSelected = selectedSeats.includes(seatId);
+                  {Array.from(
+                    { length: end - start + 1 },
+                    (_, i) => {
+                      const seatNo = start + i;
+                      const seatId = `${row.row}${seatNo}`;
 
-                  return (
-                    <button
-                      key={seatId}
-                      onClick={() => toggleSeat(seatId)}
-                      disabled={isBooked || isLocked}
-                      className={`
-  w-9 h-8 rounded-md text-xs font-medium border transition
+                      const isBooked = bookedSeats.includes(seatId);
+                      const isLocked = lockedSeats.includes(seatId);
+                      const isSelected =
+                        selectedSeats.includes(seatId);
 
-  ${isSelected && "bg-[#FF7A1A] text-black border-[#FF7A1A]"}
+                      return (
+                        <button
+                          key={seatId}
+                          onClick={() => toggleSeat(seatId)}
+                          disabled={isBooked || isLocked}
+                          className={`
+                            w-9 h-8 rounded-md text-xs font-medium border transition
 
-  ${
-    (isBooked || isLocked) &&
-    "bg-[#D6D6D6] text-black border-[#D6D6D6] cursor-not-allowed"
-  }
+                            ${
+                              isSelected &&
+                              "bg-[#FF7A1A] text-black border-[#FF7A1A]"
+                            }
 
-  ${
-    !isSelected &&
-    !isBooked &&
-    !isLocked &&
-    "border-[#555] text-[#ddd] hover:border-[#FF7A1A]"
-  }
-`}
-                    >
-                      {seatId}
-                    </button>
-                  );
-                })}
-              </div>
-            ))}
+                            ${
+                              (isBooked || isLocked) &&
+                              "bg-[#D6D6D6] text-black border-[#D6D6D6] cursor-not-allowed"
+                            }
+
+                            ${
+                              !isSelected &&
+                              !isBooked &&
+                              !isLocked &&
+                              "border-[#555] text-[#ddd] hover:border-[#FF7A1A]"
+                            }
+                          `}
+                        >
+                          {seatNo}
+                        </button>
+                      );
+                    }
+                  )}
+                </div>
+              );
+            })}
           </div>
         ))}
       </div>

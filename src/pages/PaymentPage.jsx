@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
+import TicketPageSkeleton from "../components/Skeletons/TicketPageSkeleton";
 
 const PaymentPage = () => {
   const { bookingId } = useParams();
@@ -76,8 +77,7 @@ const PaymentPage = () => {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <Navbar />
-      <div className="pt-40 text-center text-xl">Redirecting to payment...</div>
+      <TicketPageSkeleton />
     </div>
   );
 };

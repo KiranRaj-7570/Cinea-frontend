@@ -4,21 +4,9 @@ const ScreenEditor = ({ screens, setScreens }) => {
       ...screens,
       {
         screenNumber: screens.length + 1,
-        seatLayout: {
-          rows: [
-            { row: "A", seats: 20, price: 200 },
-            { row: "B", seats: 20, price: 200 },
-          ],
-        },
+        seatLayout: { rows: [] },
       },
     ]);
-  };
-
-  const updateRow = (screenIdx, rowIdx, key, value) => {
-    const copy = [...screens];
-    copy[screenIdx].seatLayout.rows[rowIdx][key] =
-      key === "row" ? value : Number(value);
-    setScreens(copy);
   };
 
   const addRow = (screenIdx) => {
@@ -31,19 +19,29 @@ const ScreenEditor = ({ screens, setScreens }) => {
     setScreens(copy);
   };
 
+  const removeRow = (screenIdx, rowIdx) => {
+    const copy = [...screens];
+    copy[screenIdx].seatLayout.rows.splice(rowIdx, 1);
+    setScreens(copy);
+  };
+
+  const updateRow = (screenIdx, rowIdx, key, value) => {
+    const copy = [...screens];
+    copy[screenIdx].seatLayout.rows[rowIdx][key] =
+      key === "row" ? value : Number(value);
+    setScreens(copy);
+  };
+
   return (
     <div className="space-y-6">
       {screens.map((screen, sIdx) => (
-        <div
-          key={sIdx}
-          className="border border-white/10 rounded-xl p-4"
-        >
+        <div key={sIdx} className="border border-white/10 rounded-xl p-4">
           <h3 className="font-semibold mb-3">
             Screen {screen.screenNumber}
           </h3>
 
           {screen.seatLayout.rows.map((r, rIdx) => (
-            <div key={rIdx} className="flex gap-2 mb-2">
+            <div key={rIdx} className="flex gap-2 mb-2 items-center">
               <input
                 value={r.row}
                 onChange={(e) =>
@@ -67,6 +65,13 @@ const ScreenEditor = ({ screens, setScreens }) => {
                 }
                 className="w-24 p-1 bg-[#151515]"
               />
+
+              <button
+                onClick={() => removeRow(sIdx, rIdx)}
+                className="text-red-400 text-sm"
+              >
+                ✕
+              </button>
             </div>
           ))}
 

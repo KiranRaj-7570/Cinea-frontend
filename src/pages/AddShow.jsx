@@ -2,47 +2,36 @@ import { useEffect, useState } from "react";
 import api from "../api/axios";
 
 const AddShow = () => {
-  // basic show fields
   const [movieId, setMovieId] = useState("");
   const [theatreId, setTheatreId] = useState("");
   const [screenNumber, setScreenNumber] = useState("");
   const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
 
-  // theatre data
+  // 👇 MULTIPLE TIMES
+  const [timeInput, setTimeInput] = useState("");
+  const [times, setTimes] = useState([]);
+
   const [theatres, setTheatres] = useState([]);
   const [selectedTheatre, setSelectedTheatre] = useState(null);
-
-  // price map (row-wise)
   const [priceMap, setPriceMap] = useState({});
 
   useEffect(() => {
     loadTheatres();
   }, []);
 
-  // fetch theatres from backend
   const loadTheatres = async () => {
-    try {
-      const res = await api.get("/admin/theatres");
-      setTheatres(res.data);
-    } catch (err) {
-      alert("Failed to load theatres");
-    }
+    const res = await api.get("/admin/theatres");
+    setTheatres(res.data);
   };
 
-  // when theatre changes
   const handleTheatreChange = (id) => {
     setTheatreId(id);
-
-    const theatre = theatres.find((t) => t._id === id);
-    setSelectedTheatre(theatre);
-
-    // reset screen + priceMap
+    const t = theatres.find((x) => x._id === id);
+    setSelectedTheatre(t);
     setScreenNumber("");
     setPriceMap({});
   };
 
-  // when screen changes → auto-generate priceMap
   const handleScreenChange = (screenNo) => {
     setScreenNumber(Number(screenNo));
 
@@ -52,13 +41,12 @@ const AddShow = () => {
 
     const map = {};
     screen.seatLayout.rows.forEach((r) => {
-      map[r.row] = r.price; // default price from theatre layout
+      map[r.row] = r.price;
     });
 
     setPriceMap(map);
   };
 
-  // update individual row price
   const updatePrice = (row, value) => {
     setPriceMap((prev) => ({
       ...prev,
@@ -66,28 +54,48 @@ const AddShow = () => {
     }));
   };
 
-  // submit show
+  // ➕ add time
+  const addTime = () => {
+    if (!timeInput || times.includes(timeInput)) return;
+    setTimes((prev) => [...prev, timeInput]);
+    setTimeInput("");
+  };
+
+  // ❌ remove time
+  const removeTime = (t) => {
+    setTimes((prev) => prev.filter((x) => x !== t));
+  };
+
   const handleSubmit = async () => {
+    if (Object.keys(priceMap).length === 0) {
+      alert("Please configure seat prices");
+      return;
+    }
+
+    if (times.length === 0) {
+      alert("Add at least one show time");
+      return;
+    }
+
     try {
       await api.post("/admin/shows", {
         movieId: Number(movieId),
-        theatreId,              // ✅ MongoDB ID auto-set
+        theatreId,
         screenNumber,
         date,
-        time,
+        times, // 👈 MULTIPLE TIMES
         language: "English",
         format: "2D",
         priceMap,
       });
 
-      alert("Show created successfully");
+      alert("Shows created successfully");
 
-      // reset form
       setMovieId("");
       setTheatreId("");
       setScreenNumber("");
       setDate("");
-      setTime("");
+      setTimes([]);
       setSelectedTheatre(null);
       setPriceMap({});
     } catch (err) {
@@ -99,7 +107,6 @@ const AddShow = () => {
     <div className="p-6 text-white max-w-xl">
       <h1 className="text-2xl font-bold mb-6">Add Show</h1>
 
-      {/* Movie ID */}
       <input
         className="w-full mb-3 p-2 rounded bg-[#151515]"
         placeholder="TMDB Movie ID"
@@ -107,7 +114,6 @@ const AddShow = () => {
         onChange={(e) => setMovieId(e.target.value)}
       />
 
-      {/* Theatre */}
       <select
         className="w-full mb-3 p-2 rounded bg-[#151515]"
         value={theatreId}
@@ -121,7 +127,6 @@ const AddShow = () => {
         ))}
       </select>
 
-      {/* Screen */}
       {selectedTheatre && (
         <select
           className="w-full mb-3 p-2 rounded bg-[#151515]"
@@ -137,7 +142,6 @@ const AddShow = () => {
         </select>
       )}
 
-      {/* Date */}
       <input
         type="date"
         className="w-full mb-3 p-2 rounded bg-[#151515]"
@@ -145,15 +149,36 @@ const AddShow = () => {
         onChange={(e) => setDate(e.target.value)}
       />
 
-      {/* Time */}
-      <input
-        type="time"
-        className="w-full mb-4 p-2 rounded bg-[#151515]"
-        value={time}
-        onChange={(e) => setTime(e.target.value)}
-      />
+      {/* 🕒 TIMES */}
+      <div className="mb-4">
+        <div className="flex gap-2">
+          <input
+            type="time"
+            value={timeInput}
+            onChange={(e) => setTimeInput(e.target.value)}
+            className="p-2 bg-[#151515] rounded flex-1"
+          />
+          <button
+            onClick={addTime}
+            className="px-4 bg-[#FF7A1A] text-black rounded"
+          >
+            Add
+          </button>
+        </div>
 
-      {/* Price Map Editor */}
+        <div className="flex gap-2 flex-wrap mt-2">
+          {times.map((t) => (
+            <span
+              key={t}
+              onClick={() => removeTime(t)}
+              className="px-3 py-1 bg-[#1c1c1c] rounded cursor-pointer text-sm"
+            >
+              {t} ✕
+            </span>
+          ))}
+        </div>
+      </div>
+
       {Object.keys(priceMap).length > 0 && (
         <div className="mb-4">
           <h3 className="font-semibold mb-2">Row Prices</h3>
@@ -175,7 +200,7 @@ const AddShow = () => {
         onClick={handleSubmit}
         className="px-6 py-2 bg-[#FF7A1A] text-black rounded font-semibold"
       >
-        Create Show
+        Create Shows
       </button>
     </div>
   );
