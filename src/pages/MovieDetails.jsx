@@ -7,6 +7,7 @@ import WatchlistButton from "../components/WatchlistButton";
 import ReviewsTab from "../components/ReviewsTab";
 import Row from "../components/Row";
 import { AuthContext } from "../context/AuthContext";
+import MovieDetailsSkeleton from "../components/Skeletons/MovieDetailsSkeleton";
 
 const MovieDetails = () => {
   const { id } = useParams();
@@ -64,16 +65,13 @@ const MovieDetails = () => {
   }, [user, inWatchlist, id]);
 
   if (!details) {
-    return (
-      <div className="min-h-screen bg-[#050816] text-white">
-        <Navbar />
-        <div className="flex items-center justify-center h-[60vh] text-slate-400">
-          Loading...
-        </div>
-      </div>
-    );
+  return (
+    <>
+      <Navbar />
+      <MovieDetailsSkeleton />
+    </>
+  );
   }
-
   const {
     title,
     overview,
@@ -98,7 +96,7 @@ const MovieDetails = () => {
 
       {/* HERO */}
       <div className="relative">
-        <div className="h-[42vh] md:h-[48vh]">
+        <div className="h-[30vh] sm:h-[40vh] md:h-[50vh] lg:h-[55vh] w-full overflow-hidden">
           <img
             src={
               backdrop_path
@@ -106,94 +104,105 @@ const MovieDetails = () => {
                 : "/no-backdrop.png"
             }
             alt={title}
-            className="w-full h-full object-cover opacity-40"
+            className="w-full h-full object-cover opacity-50"
           />
+          <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-[#050816]" />
         </div>
 
-        <div className="max-w-6xl mx-auto px-4 -mt-24 relative z-20">
-          <div className="flex gap-6">
-            {/* Poster */}
-            <div className="w-40 md:w-[220px] rounded overflow-hidden shadow-2xl">
-              <img
-                src={
-                  poster_path
-                    ? `https://image.tmdb.org/t/p/w342${poster_path}`
-                    : "/no-poster.png"
-                }
-                alt={title}
-                className="w-full h-full object-cover"
-              />
-            </div>
-
-            {/* Info */}
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold">
-                {title}{" "}
-                <span className="text-sm text-slate-400">
-                  ({release_date?.slice(0, 4)})
-                </span>
-              </h1>
-
-              <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-slate-400">
-                <span className="text-yellow-400 font-semibold">
-                  ⭐ {vote_average?.toFixed(1)}
-                </span>
-                <span>• {genres.map((g) => g.name).join(", ")}</span>
-                {runtime && <span>• {runtime}m</span>}
-              </div>
-
-              <p className="mt-4 text-slate-200 max-w-2xl">
-                {overview}
-              </p>
-
-              {/* ACTION BUTTONS */}
-              <div className="mt-6 flex flex-wrap gap-3">
-                <WatchlistButton
-                  tmdbId={Number(id)}
-                  mediaType="movie"
-                  title={title}
-                  poster={
+        <div className="w-full px-4 sm:px-6 lg:px-8 -mt-20 sm:-mt-24 md:-mt-32 relative z-20">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 lg:gap-8">
+              {/* Poster */}
+              <div className="w-32 sm:w-40 md:w-48 shrink-0 rounded-lg overflow-hidden shadow-2xl border border-[#FF7A1A]/20">
+                <img
+                  src={
                     poster_path
                       ? `https://image.tmdb.org/t/p/w342${poster_path}`
-                      : ""
+                      : "/no-poster.png"
                   }
-                  onToast={showToast}
-                  onChange={setInWatchlist}
+                  alt={title}
+                  className="w-full h-auto object-cover"
                 />
+              </div>
 
-                {inWatchlist && (
+              {/* Info */}
+              <div className="flex-1 flex flex-col justify-end pb-2">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 leading-tight">
+                  {title}{" "}
+                  <span className="text-sm sm:text-base text-slate-400 font-normal">
+                    ({release_date?.slice(0, 4)})
+                  </span>
+                </h1>
+
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-slate-300 mb-4">
+                  <span className="text-yellow-400 font-semibold flex items-center gap-1">
+                    ⭐ {vote_average?.toFixed(1)}
+                  </span>
+                  <span className="hidden sm:inline">•</span>
+                  <span className="line-clamp-2">
+                    {genres.map((g) => g.name).join(", ")}
+                  </span>
+                  {runtime && (
+                    <>
+                      <span className="hidden sm:inline">•</span>
+                      <span>{runtime}m</span>
+                    </>
+                  )}
+                </div>
+
+                <p className="text-sm sm:text-base text-slate-300 line-clamp-3 mb-4">
+                  {overview}
+                </p>
+
+                {/* ACTION BUTTONS */}
+                <div className="flex flex-wrap gap-2 sm:gap-3">
+                  <WatchlistButton
+                    tmdbId={Number(id)}
+                    mediaType="movie"
+                    title={title}
+                    poster={
+                      poster_path
+                        ? `https://image.tmdb.org/t/p/w342${poster_path}`
+                        : ""
+                    }
+                    onToast={showToast}
+                    onChange={setInWatchlist}
+                  />
+
+                  {inWatchlist && (
+                    <button
+                      disabled={completed}
+                      onClick={async () => {
+                        try {
+                          await api.patch(
+                            `/watchlist/movie/${id}/complete`
+                          );
+                          setCompleted(true);
+                          showToast("Marked as completed 🎉");
+                        } catch {
+                          showToast("Failed to mark completed");
+                        }
+                      }}
+                      className={`
+                        px-3 sm:px-4 py-2 rounded-lg font-semibold transition text-sm sm:text-base
+                        ${
+                          completed
+                            ? "bg-green-500/20 text-green-400 border border-green-500 cursor-not-allowed"
+                            : "bg-[#FF7A1A]/10 border border-[#FF7A1A] text-[#FF7A1A] hover:bg-[#FF7A1A] hover:text-black"
+                        }
+                      `}
+                    >
+                      {completed ? "✓ Completed" : "Mark as Completed"}
+                    </button>
+                  )}
+
                   <button
-                    disabled={completed}
-                    onClick={async () => {
-                      try {
-                        await api.patch(
-                          `/watchlist/movie/${id}/complete`
-                        );
-                        setCompleted(true);
-                        showToast("Marked as completed 🎉");
-                      } catch {
-                        showToast("Failed to mark completed");
-                      }
-                    }}
-                    className={`
-                      px-4 py-2 rounded-full font-semibold transition
-                      ${
-                        completed
-                          ? "bg-[#1F2937] text-green-400 border border-green-500 cursor-not-allowed"
-                          : "bg-[#0B1120] border border-[#FF7A1A] text-[#FF7A1A] hover:bg-[#FF7A1A] hover:text-black"
-                      }
-                    `}
+                    onClick={() => setActiveTab("reviews")}
+                    className="px-3 sm:px-4 py-2 rounded-lg border border-slate-600 text-slate-300 hover:border-[#FF7A1A] hover:text-[#FF7A1A] transition text-sm sm:text-base"
                   >
-                    {completed ? "✓ Completed" : "Mark as Completed"}
+                    Reviews
                   </button>
-                )}
-
-                <button
-                  onClick={() => setActiveTab("reviews")}
-                  className="px-4 py-2 rounded-full border border-slate-700 text-[#F6E7C6]"
-                >
-                  Reviews
-                </button>
+                </div>
               </div>
             </div>
           </div>
@@ -201,61 +210,67 @@ const MovieDetails = () => {
       </div>
 
       {/* CONTENT */}
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="flex gap-3 mb-6">
-          <button
-            onClick={() => setActiveTab("overview")}
-            className={`px-3 py-1 rounded ${
-              activeTab === "overview"
-                ? "bg-[#FF7A1A] text-black"
-                : "bg-[#0B1120] text-[#F6E7C6]"
-            }`}
-          >
-            Overview
-          </button>
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex gap-2 sm:gap-3 mb-6 border-b border-slate-700">
+            <button
+              onClick={() => setActiveTab("overview")}
+              className={`px-3 sm:px-4 py-2 sm:py-3 rounded-t-lg font-semibold transition text-sm sm:text-base ${
+                activeTab === "overview"
+                  ? "bg-[#FF7A1A] text-black border-b-2 border-[#FF7A1A]"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              Overview
+            </button>
 
-          <button
-            onClick={() => setActiveTab("reviews")}
-            className={`px-3 py-1 rounded ${
-              activeTab === "reviews"
-                ? "bg-[#FF7A1A] text-black"
-                : "bg-[#0B1120] text-[#F6E7C6]"
-            }`}
-          >
-            Reviews
-          </button>
-        </div>
+            <button
+              onClick={() => setActiveTab("reviews")}
+              className={`px-3 sm:px-4 py-2 sm:py-3 rounded-t-lg font-semibold transition text-sm sm:text-base ${
+                activeTab === "reviews"
+                  ? "bg-[#FF7A1A] text-black border-b-2 border-[#FF7A1A]"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              Reviews
+            </button>
+          </div>
 
-        {activeTab === "overview" && (
-          <>
-            <p className="text-slate-300">{overview}</p>
+          {activeTab === "overview" && (
+            <div className="animate-fadeIn">
+              <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-8 md:mb-12">
+                {overview}
+              </p>
 
-            <div className="mt-8">
-              <h3 className="text-xl font-semibold mb-3">
-                More like this
-              </h3>
-              <Row
-                title=""
-                fetchUrl={`/movies/similar/${id}`}
-                onSelect={handleSelect}
+              <div className="mt-8 md:mt-12">
+                <h3 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6">
+                  More like this
+                </h3>
+                <Row
+                  title=""
+                  fetchUrl={`/movies/similar/${id}`}
+                  onSelect={handleSelect}
+                />
+              </div>
+            </div>
+          )}
+
+          {activeTab === "reviews" && (
+            <div className="animate-fadeIn">
+              <ReviewsTab
+                mediaType="movie"
+                tmdbId={Number(id)}
+                poster={
+                  poster_path
+                    ? `https://image.tmdb.org/t/p/w342${poster_path}`
+                    : ""
+                }
+                title={title}
+                onToast={showToast}
               />
             </div>
-          </>
-        )}
-
-        {activeTab === "reviews" && (
-          <ReviewsTab
-            mediaType="movie"
-            tmdbId={Number(id)}
-            poster={
-              poster_path
-                ? `https://image.tmdb.org/t/p/w342${poster_path}`
-                : ""
-            }
-            title={title}
-            onToast={showToast}
-          />
-        )}
+          )}
+        </div>
       </div>
 
       <Toast

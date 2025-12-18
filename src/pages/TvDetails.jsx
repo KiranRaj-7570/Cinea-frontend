@@ -8,6 +8,7 @@ import EpisodesTab from "../components/EpisodesTab";
 import ReviewsTab from "../components/ReviewsTab";
 import Row from "../components/Row";
 import { AuthContext } from "../context/AuthContext";
+import TvDetailsSkeleton from "../components/Skeletons/TvDetailsSkeleton";
 
 const TvDetails = () => {
   const { id } = useParams();
@@ -40,15 +41,13 @@ const TvDetails = () => {
   const showToast = (message) => setToast({ show: true, message });
 
   if (!details) {
-    return (
-      <div className="min-h-screen bg-[#050816] text-white">
-        <Navbar />
-        <div className="flex items-center justify-center h-[60vh] text-slate-400">
-          Loading...
-        </div>
-      </div>
-    );
-  }
+  return (
+    <>
+      <Navbar />
+      <TvDetailsSkeleton />
+    </>
+  );
+}
 
   const {
     name,
@@ -66,7 +65,7 @@ const TvDetails = () => {
 
       {/* HERO */}
       <div className="relative">
-        <div className="h-[42vh] md:h-[48vh] bg-linear-to-t from-[#050816] to-transparent">
+        <div className="h-[35vh] sm:h-[42vh] md:h-[48vh] bg-linear-to-t from-[#050816] to-transparent">
           <img
             src={
               backdrop_path
@@ -78,10 +77,10 @@ const TvDetails = () => {
           />
         </div>
 
-        <div className="max-w-6xl mx-auto px-4 -mt-24 relative z-20">
-          <div className="flex gap-6">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 -mt-16 sm:-mt-20 md:-mt-24 relative z-20">
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
             {/* Poster */}
-            <div className="w-40 md:w-[220px] rounded overflow-hidden shadow-2xl">
+            <div className="w-32 sm:w-40 md:w-[220px] rounded-lg overflow-hidden shadow-2xl shrink-0">
               <img
                 src={
                   poster_path
@@ -94,18 +93,20 @@ const TvDetails = () => {
             </div>
 
             {/* Info */}
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold">{name}</h1>
-              <div className="flex items-center gap-3 mt-2">
-                <div className="text-yellow-400 font-semibold">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold line-clamp-2">
+                {name}
+              </h1>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mt-2 sm:mt-3 flex-wrap">
+                <div className="text-yellow-400 font-semibold text-sm sm:text-base">
                   ⭐ {vote_average?.toFixed(1)}
                 </div>
 
-                <div className="text-sm text-slate-400">
+                <div className="text-xs sm:text-sm text-slate-400">
                   • {genres.map((g) => g.name).join(", ")}
                 </div>
 
-                <div className="text-sm text-slate-400">
+                <div className="text-xs sm:text-sm text-slate-400">
                   • {seasons.filter((s) => s.season_number !== 0)?.length}{" "}
                   {seasons.filter((s) => s.season_number !== 0)?.length === 1
                     ? "Season"
@@ -113,9 +114,11 @@ const TvDetails = () => {
                 </div>
               </div>
 
-              <p className="mt-4 text-slate-200 max-w-2xl">{overview}</p>
+              <p className="mt-3 sm:mt-4 text-sm sm:text-base text-slate-200 line-clamp-3 sm:line-clamp-none max-w-2xl">
+                {overview}
+              </p>
 
-              <div className="mt-6 flex items-center gap-3">
+              <div className="mt-4 sm:mt-6 flex flex-wrap items-center gap-2 sm:gap-3">
                 <WatchlistButton
                   tmdbId={Number(id)}
                   mediaType="tv"
@@ -125,19 +128,19 @@ const TvDetails = () => {
                       ? `https://image.tmdb.org/t/p/w342${poster_path}`
                       : ""
                   }
-                  forceInList={inWatchlist} 
+                  forceInList={inWatchlist}
                   onChange={setInWatchlist}
                   onToast={showToast}
                 />
                 <button
                   onClick={() => setActiveTab("episodes")}
-                  className="px-4 py-2 rounded-full border border-slate-700 text-[#F6E7C6]"
+                  className="px-3 sm:px-4 py-2 rounded-full border border-[#FF7A1A] text-[#FF7A1A] hover:bg-[#FF7A1A] hover:text-black transition-colors text-sm sm:text-base font-medium"
                 >
                   Episodes
                 </button>
                 <button
                   onClick={() => setActiveTab("reviews")}
-                  className="px-4 py-2 rounded-full border border-slate-700 text-[#F6E7C6]"
+                  className="px-3 sm:px-4 py-2 rounded-full border border-[#FF7A1A] text-[#FF7A1A] hover:bg-[#FF7A1A] hover:text-black transition-colors text-sm sm:text-base font-medium"
                 >
                   Reviews
                 </button>
@@ -148,36 +151,36 @@ const TvDetails = () => {
       </div>
 
       {/* CONTENT */}
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8">
         {/* Tabs */}
-        <div className="mb-6">
-          <div className="flex gap-3">
+        <div className="mb-6 sm:mb-8 overflow-x-auto">
+          <div className="flex gap-2 sm:gap-3 min-w-min sm:min-w-full">
             <button
               onClick={() => setActiveTab("overview")}
-              className={`px-3 py-1 rounded ${
+              className={`px-3 sm:px-4 py-2 rounded-lg font-medium text-sm sm:text-base transition-colors whitespace-nowrap ${
                 activeTab === "overview"
                   ? "bg-[#FF7A1A] text-black"
-                  : "bg-[#0B1120] text-[#F6E7C6]"
+                  : "bg-[#0B1120] text-[#F6E7C6] hover:bg-[#1a1f35]"
               }`}
             >
               Overview
             </button>
             <button
               onClick={() => setActiveTab("episodes")}
-              className={`px-3 py-1 rounded ${
+              className={`px-3 sm:px-4 py-2 rounded-lg font-medium text-sm sm:text-base transition-colors whitespace-nowrap ${
                 activeTab === "episodes"
                   ? "bg-[#FF7A1A] text-black"
-                  : "bg-[#0B1120] text-[#F6E7C6]"
+                  : "bg-[#0B1120] text-[#F6E7C6] hover:bg-[#1a1f35]"
               }`}
             >
               Episodes
             </button>
             <button
               onClick={() => setActiveTab("reviews")}
-              className={`px-3 py-1 rounded ${
+              className={`px-3 sm:px-4 py-2 rounded-lg font-medium text-sm sm:text-base transition-colors whitespace-nowrap ${
                 activeTab === "reviews"
                   ? "bg-[#FF7A1A] text-black"
-                  : "bg-[#0B1120] text-[#F6E7C6]"
+                  : "bg-[#0B1120] text-[#F6E7C6] hover:bg-[#1a1f35]"
               }`}
             >
               Reviews
@@ -187,11 +190,17 @@ const TvDetails = () => {
 
         {activeTab === "overview" && (
           <div>
-            <h3 className="text-xl font-semibold mb-3">Overview</h3>
-            <p className="text-slate-300">{overview}</p>
+            <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold mb-3 sm:mb-4">
+              Overview
+            </h3>
+            <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
+              {overview}
+            </p>
 
-            <div className="mt-8">
-              <h3 className="text-xl font-semibold mb-3">More like this</h3>
+            <div className="mt-8 sm:mt-10">
+              <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold mb-3 sm:mb-4">
+                More like this
+              </h3>
               <Row
                 title=""
                 fetchUrl={`/tvshows/similar/${id}`}
@@ -223,7 +232,6 @@ const TvDetails = () => {
             }
             title={name}
             onToast={showToast}
-           
           />
         )}
       </div>
