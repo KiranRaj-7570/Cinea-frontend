@@ -10,6 +10,8 @@ const ReviewsTab = ({
   title,
   onToast = () => {},
   onReviewCreated,
+  onWatchlistChange = () => {},
+  onCompleted = () => {},
 }) => {
   const { user } = useContext(AuthContext);
 
@@ -61,6 +63,20 @@ const ReviewsTab = ({
       setPage(1);
       setSort("recent");
       setTimeout(() => load(), 300);
+
+      // Update watchlist when review is created
+      onWatchlistChange(true);
+      try {
+        await api.post("/watchlist", { tmdbId, mediaType, title, poster });
+      } catch {}
+
+      // Mark as completed when review is posted (both movie and TV)
+      try {
+        await api.post(`/watchlist/${mediaType}/${Number(tmdbId)}/complete`);
+        onCompleted(true);
+      } catch (err) {
+        console.error("Auto-complete error:", err);
+      }
 
       if (onReviewCreated) {
         onReviewCreated();
@@ -203,7 +219,7 @@ const CreateReviewForm = ({ onSubmit }) => {
   const [text, setText] = useState("");
 
   return (
-    <div className="bg-[#0B1120] border border-slate-800 p-3 sm:p-4 rounded-lg">
+    <div className="bg-[#1e1e1e] border border-slate-800 p-3 sm:p-4 rounded-lg">
       <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
         <label className="text-sm text-slate-300">Your rating</label>
 

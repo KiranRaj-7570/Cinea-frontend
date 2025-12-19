@@ -46,8 +46,10 @@ const MyBookings = () => {
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-6 mt-12 pb-24">
-        <h1 className="text-3xl font-bold mb-6 anton text-[#F6E7C6]">My Bookings</h1>
-          <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen h-[5px] bg-black/20 shadow-md mt-5" />
+        <h1 className="text-3xl font-bold mb-6 anton text-[#F6E7C6]">
+          My Bookings
+        </h1>
+        <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen h-[5px] bg-black/20 shadow-md mt-5" />
 
         {/* 🔄 Skeleton */}
         {loading && (
@@ -85,6 +87,11 @@ const MyBookings = () => {
         open={!!confirmId}
         onCancel={() => setConfirmId(null)}
         onConfirm={cancelBooking}
+        title="Cancel Booking?"
+        description="This action cannot be undone."
+        confirmText="Yes, Cancel"
+        confirmVariant="danger"
+        loading={false}
       />
 
       <Toast show={!!toast} message={toast} onClose={() => setToast("")} />

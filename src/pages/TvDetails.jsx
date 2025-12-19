@@ -1,9 +1,10 @@
-import { useEffect, useState, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import api from "../api/axios";
 import Toast from "../components/Toast";
 import WatchlistButton from "../components/WatchlistButton";
+import MarkSeriesCompletedButton from "../components/MarkSeriesCompletedButton";
 import EpisodesTab from "../components/EpisodesTab";
 import ReviewsTab from "../components/ReviewsTab";
 import Row from "../components/Row";
@@ -14,40 +15,59 @@ const TvDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
+
   const [details, setDetails] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
   const [toast, setToast] = useState({ show: false, message: "" });
+ const [watchlistRefreshKey, setWatchlistRefreshKey] = useState(0);
 
+  const [inWatchlist, setInWatchlist] = useState(false);
+  const [completed, setCompleted] = useState(false);
+
+  const showToast = (message) =>
+    setToast({ show: true, message });
+
+  /* ================= LOAD DETAILS ================= */
   useEffect(() => {
     const load = async () => {
       try {
         const res = await api.get(`/tvshows/details/${id}`);
         setDetails(res.data);
-      } catch (err) {
-        console.error("Load show err", err);
-        setToast({ show: true, message: "Failed to load show" });
+      } catch {
+        showToast("Failed to load show");
       }
     };
     load();
   }, [id]);
 
-  const [inWatchlist, setInWatchlist] = useState(false);
+  /* ================= SYNC COMPLETED ================= */
+  useEffect(() => {
+    if (!user || !inWatchlist) {
+      setCompleted(false);
+      return;
+    }
 
-  const handleSelect = (item) => {
-    const isTV = item.media_type === "tv" || item.first_air_date;
-    if (isTV) navigate(`/series/${item.id}`);
-    else navigate(`/movie/${item.id}`);
-  };
-  const showToast = (message) => setToast({ show: true, message });
+    const sync = async () => {
+      try {
+        const res = await api.get("/watchlist");
+        const item = res.data.items?.find(
+          (i) => i.tmdbId === Number(id) && i.mediaType === "tv"
+        );
+        setCompleted(Boolean(item?.completed));
+      } catch {}
+    };
+
+    sync();
+  }, [user, inWatchlist, id]);
 
   if (!details) {
-  return (
-    <>
-      <Navbar />
-      <TvDetailsSkeleton />
-    </>
-  );
-}
+    return (
+      <>
+        <Navbar />
+        <TvDetailsSkeleton />
+      </>
+    );
+  }
 
   const {
     name,
@@ -59,13 +79,18 @@ const TvDetails = () => {
     vote_average,
   } = details;
 
+  const handleSelect = (item) => {
+    const isTV = item.media_type === "tv" || item.first_air_date;
+    navigate(isTV ? `/series/${item.id}` : `/movie/${item.id}`);
+  };
+
   return (
-    <div className="min-h-screen bg-[#050816] text-white">
+    <div className="min-h-screen bg-[#161616] text-white">
       <Navbar />
 
-      {/* HERO */}
+      {/* ================= HERO ================= */}
       <div className="relative">
-        <div className="h-[35vh] sm:h-[42vh] md:h-[48vh] bg-linear-to-t from-[#050816] to-transparent">
+        <div className="h-[35vh] md:h-[50vh] w-full overflow-hidden">
           <img
             src={
               backdrop_path
@@ -73,141 +98,94 @@ const TvDetails = () => {
                 : "/no-backdrop.png"
             }
             alt={name}
-            className="w-full h-full object-cover opacity-40"
+            className="w-full h-full object-cover opacity-50"
           />
+          <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-[#161616]" />
         </div>
 
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 -mt-16 sm:-mt-20 md:-mt-24 relative z-20">
-          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
-            {/* Poster */}
-            <div className="w-32 sm:w-40 md:w-[220px] rounded-lg overflow-hidden shadow-2xl shrink-0">
-              <img
-                src={
-                  poster_path
-                    ? `https://image.tmdb.org/t/p/w342${poster_path}`
-                    : "/no-poster.png"
-                }
-                alt={name}
-                className="w-full h-full object-cover"
-              />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 -mt-24 flex gap-6">
+          <img
+            src={
+              poster_path
+                ? `https://image.tmdb.org/t/p/w342${poster_path}`
+                : "/no-poster.png"
+            }
+            className="w-40 rounded-lg shadow-lg"
+            alt={name}
+          />
+
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold anton text-[#F6E7C6]">
+              {name}
+            </h1>
+
+            <div className="flex gap-3 text-sm text-[#F6E7C6] mt-2">
+              <span className="text-yellow-400">
+                ⭐ {vote_average?.toFixed(1)}
+              </span>
+              <span>{genres.map((g) => g.name).join(", ")}</span>
             </div>
 
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold line-clamp-2">
-                {name}
-              </h1>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mt-2 sm:mt-3 flex-wrap">
-                <div className="text-yellow-400 font-semibold text-sm sm:text-base">
-                  ⭐ {vote_average?.toFixed(1)}
-                </div>
+            {/* ACTION BUTTONS */}
+            <div className="mt-4 flex flex-wrap gap-3">
+              <WatchlistButton
+  tmdbId={Number(id)}
+  mediaType="tv"
+  title={name}
+  poster={
+    poster_path
+      ? `https://image.tmdb.org/t/p/w342${poster_path}`
+      : ""
+  }
+  onChange={setInWatchlist}
+  onToast={showToast}
+  refreshKey={watchlistRefreshKey}
+/>
 
-                <div className="text-xs sm:text-sm text-slate-400">
-                  • {genres.map((g) => g.name).join(", ")}
-                </div>
+              <MarkSeriesCompletedButton
+  tmdbId={Number(id)}
+  inWatchlist={inWatchlist}
+  completed={completed}
+  onCompletedChange={(val) => {
+    setCompleted(val);
+    setWatchlistRefreshKey((k) => k + 1);
+  }}
+  onToast={showToast}
+/>
 
-                <div className="text-xs sm:text-sm text-slate-400">
-                  • {seasons.filter((s) => s.season_number !== 0)?.length}{" "}
-                  {seasons.filter((s) => s.season_number !== 0)?.length === 1
-                    ? "Season"
-                    : "Seasons"}
-                </div>
-              </div>
-
-              <p className="mt-3 sm:mt-4 text-sm sm:text-base text-slate-200 line-clamp-3 sm:line-clamp-none max-w-2xl">
-                {overview}
-              </p>
-
-              <div className="mt-4 sm:mt-6 flex flex-wrap items-center gap-2 sm:gap-3">
-                <WatchlistButton
-                  tmdbId={Number(id)}
-                  mediaType="tv"
-                  title={name}
-                  poster={
-                    poster_path
-                      ? `https://image.tmdb.org/t/p/w342${poster_path}`
-                      : ""
-                  }
-                  forceInList={inWatchlist}
-                  onChange={setInWatchlist}
-                  onToast={showToast}
-                />
-                <button
-                  onClick={() => setActiveTab("episodes")}
-                  className="px-3 sm:px-4 py-2 rounded-full border border-[#FF7A1A] text-[#FF7A1A] hover:bg-[#FF7A1A] hover:text-black transition-colors text-sm sm:text-base font-medium"
-                >
-                  Episodes
-                </button>
-                <button
-                  onClick={() => setActiveTab("reviews")}
-                  className="px-3 sm:px-4 py-2 rounded-full border border-[#FF7A1A] text-[#FF7A1A] hover:bg-[#FF7A1A] hover:text-black transition-colors text-sm sm:text-base font-medium"
-                >
-                  Reviews
-                </button>
-              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* CONTENT */}
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8">
-        {/* Tabs */}
-        <div className="mb-6 sm:mb-8 overflow-x-auto">
-          <div className="flex gap-2 sm:gap-3 min-w-min sm:min-w-full">
+      {/* ================= TABS ================= */}
+      <div className="max-w-7xl mx-auto px-4 mt-8">
+        <div className="flex gap-3 border-b border-slate-700 mb-6">
+          {["overview", "episodes", "reviews"].map((tab) => (
             <button
-              onClick={() => setActiveTab("overview")}
-              className={`px-3 sm:px-4 py-2 rounded-lg font-medium text-sm sm:text-base transition-colors whitespace-nowrap ${
-                activeTab === "overview"
-                  ? "bg-[#FF7A1A] text-black"
-                  : "bg-[#0B1120] text-[#F6E7C6] hover:bg-[#1a1f35]"
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-3 capitalize ${
+                activeTab === tab
+                  ? "border-b-2 border-[#FF7A1A] text-[#FF7A1A]"
+                  : "text-slate-400 hover:text-white"
               }`}
             >
-              Overview
+              {tab}
             </button>
-            <button
-              onClick={() => setActiveTab("episodes")}
-              className={`px-3 sm:px-4 py-2 rounded-lg font-medium text-sm sm:text-base transition-colors whitespace-nowrap ${
-                activeTab === "episodes"
-                  ? "bg-[#FF7A1A] text-black"
-                  : "bg-[#0B1120] text-[#F6E7C6] hover:bg-[#1a1f35]"
-              }`}
-            >
-              Episodes
-            </button>
-            <button
-              onClick={() => setActiveTab("reviews")}
-              className={`px-3 sm:px-4 py-2 rounded-lg font-medium text-sm sm:text-base transition-colors whitespace-nowrap ${
-                activeTab === "reviews"
-                  ? "bg-[#FF7A1A] text-black"
-                  : "bg-[#0B1120] text-[#F6E7C6] hover:bg-[#1a1f35]"
-              }`}
-            >
-              Reviews
-            </button>
-          </div>
+          ))}
         </div>
 
         {activeTab === "overview" && (
-          <div>
-            <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold mb-3 sm:mb-4">
-              Overview
-            </h3>
-            <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
-              {overview}
-            </p>
+          <>
+            <p className="text-[#F6E7C6] mb-8">{overview}</p>
 
-            <div className="mt-8 sm:mt-10">
-              <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold mb-3 sm:mb-4">
-                More like this
-              </h3>
-              <Row
-                title=""
-                fetchUrl={`/tvshows/similar/${id}`}
-                onSelect={handleSelect}
-              />
-            </div>
-          </div>
+            <Row
+              title="More like this"
+              fetchUrl={`/tvshows/similar/${id}`}
+              onSelect={handleSelect}
+            />
+          </>
         )}
 
         {activeTab === "episodes" && (
@@ -216,29 +194,41 @@ const TvDetails = () => {
             seasons={seasons}
             title={name}
             poster={
-              poster_path ? `https://image.tmdb.org/t/p/w342${poster_path}` : ""
+              poster_path
+                ? `https://image.tmdb.org/t/p/w342${poster_path}`
+                : ""
             }
             onToast={showToast}
             inWatchlist={inWatchlist}
+            completed={completed}
+            onWatchlistChange={setInWatchlist}
           />
         )}
 
-        {activeTab === "reviews" && (
-          <ReviewsTab
-            mediaType="tv"
-            tmdbId={Number(id)}
-            poster={
-              poster_path ? `https://image.tmdb.org/t/p/w342${poster_path}` : ""
-            }
-            title={name}
-            onToast={showToast}
-          />
-        )}
+       {activeTab === "reviews" && (
+  <ReviewsTab
+    mediaType="tv"
+    tmdbId={Number(id)}
+    poster={
+      poster_path
+        ? `https://image.tmdb.org/t/p/w342${poster_path}`
+        : ""
+    }
+    title={name}
+    onToast={showToast}
+    onCompleted={() => {
+      setCompleted(true);
+      setWatchlistRefreshKey((k) => k + 1);
+    }}
+    onWatchlistChange={setInWatchlist}
+  />
+)}
+
       </div>
 
       <Toast
-        message={toast.message}
         show={toast.show}
+        message={toast.message}
         onClose={() => setToast({ show: false, message: "" })}
       />
     </div>

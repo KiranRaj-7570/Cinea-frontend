@@ -29,6 +29,13 @@ const Watchlist = () => {
 
   useEffect(() => {
     load();
+    
+    // Auto-refresh watchlist every 2 seconds for real-time updates
+    const interval = setInterval(() => {
+      load();
+    }, 2000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   // 🔒 persist tab (UX fix)
@@ -38,12 +45,12 @@ const Watchlist = () => {
 
   const load = async () => {
     try {
-      setLoading(true);
+      setLoading(false); // Don't show skeleton on refresh
       const res = await api.get("/watchlist");
       setItems(res.data.items || []);
     } catch (err) {
       console.error("Watchlist load error", err);
-      showToast("Failed to load watchlist");
+      if (loading) showToast("Failed to load watchlist");
     } finally {
       setLoading(false);
     }

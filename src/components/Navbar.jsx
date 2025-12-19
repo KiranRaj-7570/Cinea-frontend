@@ -215,52 +215,61 @@ const Navbar = () => {
       )}
 
       {/* DESKTOP RIGHT */}
-      <div className="hidden lg:flex items-center gap-8">
-        <div className="flex gap-10 reem-kufi font-semibold ">
-          <NavLink to="/home" className="text-[#F6E7C6] hover:text-orange-400 transition">
-            Home
-          </NavLink>
-          <NavLink to="/explore" className="text-[#F6E7C6] hover:text-orange-400 transition">
-            Explore
-          </NavLink>
-          <NavLink to="/watchlist" className="text-[#F6E7C6] hover:text-orange-400 transition">
-            Watchlist
-          </NavLink>
-          <NavLink to="/booking" className="text-[#F6E7C6] hover:text-orange-400 transition">
-            Book Show
-          </NavLink>
-        </div>
+      <div className="hidden lg:flex items-center gap-8 ml-auto">
+        {user ? (
+          <>
+            <div className="flex gap-10 reem-kufi font-semibold ">
+              <NavLink to="/home" className="text-[#F6E7C6] hover:text-orange-400 transition">
+                Home
+              </NavLink>
+              <NavLink to="/explore" className="text-[#F6E7C6] hover:text-orange-400 transition">
+                Explore
+              </NavLink>
+              <NavLink to="/watchlist" className="text-[#F6E7C6] hover:text-orange-400 transition">
+                Watchlist
+              </NavLink>
+              <NavLink to="/booking" className="text-[#F6E7C6] hover:text-orange-400 transition">
+                Book Show
+              </NavLink>
+            </div>
 
-        {user?.role === "admin" && (
+            {user?.role === "admin" && (
+              <button
+                onClick={() => navigate("/admin")}
+                className="px-4 py-1 reem-kufi  text-[#F6E7C6] hover:text-orange-400 transition"
+              >
+                Admin
+              </button>
+            )}
+
+            <FiBell size={22} className="text-[#F6E7C6] hover:text-orange-400 transition" />
+
+            {/* PROFILE AVATAR (RESTORED) */}
+            <div className="relative" ref={profileRef}>
+              <button
+                onClick={() => setOpen((prev) => !prev)}
+                className="flex items-center gap-2 focus:outline-none"
+              >
+                <img
+                  src={user.avatar || avatarPlaceholder}
+                  alt="avatar"
+                  className="w-9 h-9 rounded-full object-cover"
+                />
+              </button>
+
+              {open && (
+                <ProfileDropdown onClose={() => setOpen(false)} />
+              )}
+            </div>
+          </>
+        ) : (
           <button
-            onClick={() => navigate("/admin")}
-            className="px-4 py-1 reem-kufi  text-[#F6E7C6] hover:text-orange-400 transition"
+            onClick={() => navigate("/login")}
+            className="px-6 py-2 bg-[#FF7A1A] text-white rounded-full reem-kufi font-semibold hover:bg-orange-500 transition"
           >
-            Admin
+            Login
           </button>
         )}
-
-        <FiBell size={22} className="text-[#F6E7C6] hover:text-orange-400 transition" />
-
-        {/* PROFILE AVATAR (RESTORED) */}
-        {user && (
-  <div className="relative" ref={profileRef}>
-    <button
-      onClick={() => setOpen((prev) => !prev)}
-      className="flex items-center gap-2 focus:outline-none"
-    >
-      <img
-        src={user.avatar || avatarPlaceholder}
-        alt="avatar"
-        className="w-9 h-9 rounded-full object-cover"
-      />
-    </button>
-
-    {open && (
-      <ProfileDropdown onClose={() => setOpen(false)} />
-    )}
-  </div>
-)}
       </div>
 
       {/* MOBILE HAMBURGER */}

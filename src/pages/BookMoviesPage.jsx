@@ -11,7 +11,7 @@ import MovieCardSkeleton from "../components/Skeletons/MovieCardSkeleton";
 const BookMoviesPage = () => {
   const navigate = useNavigate();
 
-  const [city, setCity] = useState("Chennai");
+  const [city, setCity] = useState(null);
   const [date, setDate] = useState(new Date());
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,7 +19,27 @@ const BookMoviesPage = () => {
   const selectedDate = date.toLocaleDateString("en-CA");
 
   useEffect(() => {
-    loadMovies();
+    fetchCities();
+  }, []);
+
+  const fetchCities = async () => {
+    try {
+      const res = await api.get("/admin/cities");
+      if (res.data && res.data.length > 0) {
+        setCity(res.data[0]);
+      } else {
+        setCity("Chennai");
+      }
+    } catch (err) {
+      console.error("Failed to fetch cities", err);
+      setCity("Chennai");
+    }
+  };
+
+  useEffect(() => {
+    if (city) {
+      loadMovies();
+    }
   }, [city, date]);
 
   const loadMovies = async () => {

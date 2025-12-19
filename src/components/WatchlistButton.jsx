@@ -1,6 +1,7 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import api from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
+import { fetchWatchlistItem } from "../utils/watchlistSync";
 
 const WatchlistButton = ({
   tmdbId,
@@ -9,91 +10,98 @@ const WatchlistButton = ({
   poster,
   onToast = () => {},
   onChange = () => {},
-  forceInList = null,
+  refreshKey = 0,
 }) => {
   const { user } = useContext(AuthContext);
-  const [inList, setInList] = useState(false);
+
+  const [state, setState] = useState({
+    inList: false,
+    completed: false,
+  });
   const [loading, setLoading] = useState(false);
+  const prevRef = useRef(state);
 
-  /* FORCE OVERRIDE */
-  useEffect(() => {
-    if (forceInList === true) setInList(true);
-    if (forceInList === false) setInList(false);
-  }, [forceInList]);
-
-  /* CHECK WATCHLIST */
-  useEffect(() => {
+  /* ===== SYNC FROM WATCHLIST ===== */
+  const sync = async () => {
     if (!user) {
-      setInList(false);
+      setState({ inList: false, completed: false });
       return;
     }
-
-    let mounted = true;
-
-    const check = async () => {
-      try {
-        const res = await api.get("/watchlist");
-        const found = res.data.items?.some(
-          (i) =>
-            Number(i.tmdbId) === Number(tmdbId) &&
-            i.mediaType === mediaType
-        );
-        if (mounted) setInList(Boolean(found));
-      } catch (err) {
-        console.error("Watchlist check error:", err);
-      }
-    };
-
-    check();
-    return () => (mounted = false);
-  }, [tmdbId, mediaType, user]);
+    try {
+      const item = await fetchWatchlistItem(tmdbId, mediaType);
+      setState({
+        inList: Boolean(item),
+        completed: Boolean(item?.completed),
+      });
+    } catch (e) {
+      console.error("Watchlist sync failed", e);
+    }
+  };
 
   useEffect(() => {
-    onChange(inList);
-  }, [inList, onChange]);
+    sync();
+  }, [tmdbId, mediaType, user, refreshKey]);
+
+  /* notify parent ONLY on change */
+  useEffect(() => {
+    if (
+      prevRef.current.inList !== state.inList ||
+      prevRef.current.completed !== state.completed
+    ) {
+      prevRef.current = state;
+      onChange(state.inList);
+    }
+  }, [state, onChange]);
+
+  /* ===== ACTIONS ===== */
 
   const add = async () => {
-    if (!user) return onToast("Login to add to watchlist");
+    if (!user) return onToast("Login required");
     setLoading(true);
+
     try {
-      const res = await api.post("/watchlist", {
-        tmdbId,
-        mediaType,
-        title,
-        poster,
-      });
-      setInList(true);
-      onToast(res.data?.message || "Added to watchlist");
-    } catch (err) {
-      onToast(err.response?.data?.message || "Failed to add");
+      await api.post("/watchlist", { tmdbId, mediaType, title, poster });
+
+      /* 🔥 OPTIMISTIC UPDATE (SAFE) */
+      setState((s) => ({ ...s, inList: true }));
+      onChange(true);
+
+      await sync(); // backend truth
+      onToast("Added to watchlist");
+    } catch (e) {
+      onToast("Failed to add");
     } finally {
       setLoading(false);
     }
   };
 
   const remove = async () => {
-    if (!user) return onToast("Login required");
+    if (!user) return;
     setLoading(true);
     try {
-      const res = await api.delete(
-        `/watchlist/${mediaType}/${tmdbId}`
-      );
-      setInList(false);
-      onToast(res.data?.message || "Removed from watchlist");
-    } catch (err) {
-      onToast(err.response?.data?.message || "Failed to remove");
+      await api.delete(`/watchlist/${mediaType}/${tmdbId}`);
+      setState((s) => ({ ...s, inList: false }));
+      onChange(false);
+
+      await sync();
+      onToast("Removed from watchlist");
+    } catch {
+      onToast("Failed to remove");
     } finally {
       setLoading(false);
     }
   };
 
-  return !inList ? (
+  /* ===== UX RULE ===== */
+  if (state.completed) return null;
+
+  return !state.inList ? (
     <button
       onClick={add}
       disabled={loading}
-      className="px-4 py-2 rounded-full bg-[#FF7A1A] hover:bg-[#f56c08] text-black font-semibold"
+      className="px-4 py-2 rounded-full bg-[#FF7A1A] text-black font-semibold"
     >
-      {loading ? "..." : "+ Add to Watchlist"}
+      {loading ? "updating..." : "+ Add to Watchlist"}
     </button>
   ) : (
     <button
@@ -101,7 +109,7 @@ const WatchlistButton = ({
       disabled={loading}
       className="px-4 py-2 rounded-full bg-[#0F3E21] border border-green-500 text-green-300 font-semibold"
     >
-      {loading ? "..." : "✓ In Watchlist"}
+      {loading ? "updating..." : "✓ In Watchlist"}
     </button>
   );
 };

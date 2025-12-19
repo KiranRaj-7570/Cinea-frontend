@@ -3,32 +3,22 @@ import api from "../api/axios";
 import EpisodeItem from "./EpisodeItem";
 import { AuthContext } from "../context/AuthContext";
 
-/**
- * Props:
- * - tmdbId
- * - seasons
- * - title
- * - poster
- * - inWatchlist
- * - onWatchlistChange
- * - onToast
- */
 const EpisodesTab = ({
   tmdbId,
   seasons = [],
   title,
   poster,
   inWatchlist,
+  completed,
   onWatchlistChange = () => {},
   onToast = () => {},
 }) => {
   const { user } = useContext(AuthContext);
 
-
-  const visibleSeasons = useMemo(() => {
-  return (seasons || []).filter((s) => s.season_number !== 0);
-}, [seasons]);
-
+  const visibleSeasons = useMemo(
+    () => (seasons || []).filter((s) => s.season_number !== 0),
+    [seasons]
+  );
 
   const defaultSeason =
     visibleSeasons[0]?.season_number ??
@@ -36,211 +26,236 @@ const EpisodesTab = ({
     1;
 
   const [activeSeason, setActiveSeason] = useState(defaultSeason);
-
   const [seasonDetails, setSeasonDetails] = useState({});
-
   const [progress, setProgress] = useState({
     seasons: [],
     lastWatched: { season: 0, episode: 0 },
   });
-
   const [loadingEp, setLoadingEp] = useState(false);
+
   const isMounted = useRef(true);
+  const autoMarkedRef = useRef(false); // 🔒 prevent loops
 
   useEffect(() => {
     isMounted.current = true;
-    return () => {
-      isMounted.current = false;
-    };
+    return () => (isMounted.current = false);
   }, []);
 
+  /* ================= LOAD PROGRESS ================= */
+
+  const loadProgress = async () => {
+    try {
+      const res = await api.get(`/progress/tv/${tmdbId}`);
+      setProgress(
+        res.data.progress || {
+          seasons: [],
+          lastWatched: { season: 0, episode: 0 },
+        }
+      );
+    } catch (err) {
+      console.error("Load progress error", err);
+    }
+  };
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await api.get(`/progress/tv/${tmdbId}`);
-        setProgress(
-          res.data.progress || {
-            seasons: [],
-            lastWatched: { season: 0, episode: 0 },
-          }
-        );
-      } catch (err) {
-        console.error("Load progress", err);
-      }
-    };
-    load();
+    loadProgress();
   }, [tmdbId]);
 
-
   useEffect(() => {
-    const reload = async () => {
-      try {
-        const res = await api.get(`/progress/tv/${tmdbId}`);
-        setProgress(
-          res.data.progress || {
-            seasons: [],
-            lastWatched: { season: 0, episode: 0 },
-          }
-        );
-      } catch {}
-    };
-    reload();
+    if (inWatchlist) loadProgress();
   }, [inWatchlist, tmdbId]);
 
- 
+  /* ================= FETCH SEASON ================= */
+
   const fetchSeasonDetails = async (seasonNumber) => {
-    if (seasonDetails[seasonNumber]) return; 
+    if (seasonDetails[seasonNumber]) {
+      return seasonDetails[seasonNumber];
+    }
+
     setLoadingEp(true);
     try {
-      const res = await api.get(`/tvshows/${tmdbId}/season/${seasonNumber}`);
+      const res = await api.get(
+        `/tvshows/${tmdbId}/season/${seasonNumber}`
+      );
 
-      if (!isMounted.current) return;
+      if (!isMounted.current) return null;
 
-      setSeasonDetails((s) => ({
-        ...s,
+      setSeasonDetails((prev) => ({
+        ...prev,
         [seasonNumber]: res.data,
       }));
+
+      return res.data; // ✅ RETURN DATA
     } catch (err) {
       console.error(err);
       onToast("Failed to load episodes");
+      return null;
     } finally {
       setLoadingEp(false);
     }
   };
 
   useEffect(() => {
-    if (activeSeason !== null && activeSeason !== undefined) {
+    if (activeSeason != null) {
       fetchSeasonDetails(activeSeason);
     }
   }, [activeSeason]);
+
+  /* ================= AUTO MARK ALL WHEN COMPLETED ================= */
+
+  useEffect(() => {
+    if (!completed || autoMarkedRef.current || !visibleSeasons.length) return;
+
+    const markAll = async () => {
+      try {
+        for (const s of visibleSeasons) {
+          const data = await fetchSeasonDetails(s.season_number);
+          const total = data?.episodes?.length || 0;
+
+          if (total > 0) {
+            await api.patch("/progress/mark-season", {
+              tmdbId,
+              season: s.season_number,
+              totalEpisodesForSeason: total,
+            });
+          }
+        }
+        await loadProgress();
+        autoMarkedRef.current = true; // 🔒 run only once
+      } catch (err) {
+        console.error("Auto mark all failed", err);
+      }
+    };
+
+    markAll();
+  }, [completed, visibleSeasons, tmdbId]);
+
+  /* ================= HELPERS ================= */
 
   const isEpisodeWatched = (seasonNumber, episodeNumber) => {
     const s = progress.seasons?.find(
       (x) => x.seasonNumber === Number(seasonNumber)
     );
-    if (!s) return false;
-    return s.watchedEpisodes.includes(Number(episodeNumber));
+    return Boolean(s?.watchedEpisodes?.includes(Number(episodeNumber)));
   };
 
+  /* ================= TOGGLE EP ================= */
+
   const handleToggle = async (seasonNumber, episodeNumber) => {
-  if (!user) return onToast("Login to track progress");
+    if (!user) return onToast("Login to track progress");
 
-  const seasonNum = Number(seasonNumber);
-  const epNum = Number(episodeNumber);
+    const seasonNum = Number(seasonNumber);
+    const epNum = Number(episodeNumber);
 
-  // Ensure we have season details (for totalEpisodes)
-  let seasonData = seasonDetails[seasonNum];
-  if (!seasonData) {
-    seasonData = await fetchSeasonDetails(seasonNum);
-  }
-  const total = seasonData?.episodes?.length || 0;
+    const seasonData = await fetchSeasonDetails(seasonNum);
+    const total = seasonData?.episodes?.length || 0;
 
-  // OPTIMISTIC UPDATE (consistent undo rules)
-  setProgress((prev) => {
-    const prevSeasons = Array.isArray(prev?.seasons) ? prev.seasons : [];
-    const p = {
-      seasons: [...prevSeasons],
-      lastWatched: { ...(prev?.lastWatched || { season: 0, episode: 0 }) },
-    };
+    // optimistic update
+    setProgress((prev) => {
+      const seasonsCopy = [...(prev.seasons || [])];
+      let season = seasonsCopy.find(
+        (s) => s.seasonNumber === seasonNum
+      );
 
-    let season = p.seasons.find((s) => s.seasonNumber === seasonNum);
-    if (!season) {
-      season = { seasonNumber: seasonNum, watchedEpisodes: [] };
-      p.seasons.push(season);
-    }
+      if (!season) {
+        season = { seasonNumber: seasonNum, watchedEpisodes: [] };
+        seasonsCopy.push(season);
+      }
 
-    season.watchedEpisodes = Array.isArray(season.watchedEpisodes)
-      ? [...season.watchedEpisodes]
-      : [];
+      const watched = new Set(season.watchedEpisodes || []);
+      const maxWatched = Math.max(0, ...watched);
 
-    const maxWatched = season.watchedEpisodes.length
-      ? Math.max(...season.watchedEpisodes)
-      : 0;
-    const already = season.watchedEpisodes.includes(epNum);
-
-    if (!already) {
-      // mark 1..epNum
-      season.watchedEpisodes = Array.from({ length: epNum }, (_, i) => i + 1);
-    } else {
-      if (epNum === maxWatched) {
-        // undo the last watched — remove only this episode
-        season.watchedEpisodes = season.watchedEpisodes.filter((e) => e !== epNum);
+      if (!watched.has(epNum)) {
+        for (let i = 1; i <= epNum; i++) watched.add(i);
+      } else if (epNum === maxWatched) {
+        watched.delete(epNum);
       } else {
-        // clicked a lower already-watched ep — remove everything above clicked ep
-        season.watchedEpisodes = season.watchedEpisodes.filter((e) => e <= epNum);
+        for (let i = epNum + 1; i <= maxWatched; i++) watched.delete(i);
       }
-    }
 
-    // recompute lastWatched
-    let last = { season: 0, episode: 0 };
-    for (const se of p.seasons) {
-      if (!se.watchedEpisodes || se.watchedEpisodes.length === 0) continue;
-      const maxEp = Math.max(...se.watchedEpisodes);
-      if (
-        se.seasonNumber > last.season ||
-        (se.seasonNumber === last.season && maxEp > last.episode)
-      ) {
-        last = { season: se.seasonNumber, episode: maxEp };
-      }
-    }
-    p.lastWatched = last;
+      season.watchedEpisodes = Array.from(watched);
 
-    return p;
-  });
-
-  // Ensure watchlist shows instantly
-  onWatchlistChange(true);
-  try { await api.post("/watchlist", { tmdbId, mediaType: "tv", title, poster }); } catch {}
-
-  // Backend sync (send total episodes so server can update properly)
-  try {
-    const res = await api.post("/progress/tv", {
-      tmdbId,
-      season: seasonNum,
-      episode: epNum,
-      title,
-      poster,
-      totalEpisodesForSeason: total,
+      return {
+        seasons: seasonsCopy,
+        lastWatched: { season: seasonNum, episode: epNum },
+      };
     });
-    if (res?.data?.progress) setProgress(res.data.progress);
-    onToast(res.data.message || "Progress updated");
-  } catch (err) {
-    console.error("Toggle ep err", err);
-    onToast("Failed to update progress");
-  }
-};
+
+    onWatchlistChange(true);
+    try {
+      await api.post("/watchlist", {
+        tmdbId,
+        mediaType: "tv",
+        title,
+        poster,
+      });
+    } catch {}
+
+    try {
+      const res = await api.post("/progress/tv", {
+        tmdbId,
+        season: seasonNum,
+        episode: epNum,
+        title,
+        poster,
+        totalEpisodesForSeason: total,
+      });
+      if (res?.data?.progress) setProgress(res.data.progress);
+      onToast(res.data?.message || "Progress updated");
+    } catch {
+      onToast("Failed to update progress");
+    }
+  };
+
+  /* ================= RENDER ================= */
 
   return (
     <div>
-     
-      <div className="flex gap-2 mb-3 overflow-x-auto pb-2">
-        {visibleSeasons.map((s) => (
-          <button
-            key={s.season_number}
-            onClick={() => setActiveSeason(s.season_number)}
-            className={`px-3 py-1 rounded-full text-sm ${
-              activeSeason === s.season_number
-                ? "bg-[#FF7A1A] text-black"
-                : "bg-[#0B1120] text-[#F6E7C6] border border-slate-700"
-            }`}
-          >
-            Season {s.season_number}
-          </button>
-        ))}
+      {/* Season selector */}
+      <div className="mb-6 sm:mb-8">
+        <h3 className="text-sm font-semibold text-slate-300 mb-3">
+          Select Season
+        </h3>
+        <div className="flex gap-2 overflow-x-auto pb-2">
+          {visibleSeasons.map((s) => (
+            <button
+              key={s.season_number}
+              onClick={() => setActiveSeason(s.season_number)}
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap ${
+                activeSeason === s.season_number
+                  ? "bg-[#FF7A1A] text-black"
+                  : "bg-[#0B1120] text-[#F6E7C6] border border-slate-700 hover:border-[#FF7A1A]"
+              }`}
+            >
+              Season {s.season_number}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="space-y-4">
-        <div className="text-sm text-slate-400 mb-1">
-          Season {activeSeason}
+      {/* Episodes list */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-[#F6E7C6]">
+            Season {activeSeason}
+          </h3>
+          <div className="text-xs text-slate-400">
+            {seasonDetails[activeSeason]?.episodes?.length || 0} episodes
+          </div>
         </div>
 
-        <div className="bg-[#0B1120] border border-slate-800 rounded-lg p-3">
+        <div className="bg-[#0B1120] border border-slate-800 rounded-lg overflow-hidden">
           {loadingEp ? (
-            <p className="text-slate-400">Loading episodes...</p>
+            <div className="p-6 text-center text-slate-400">
+              Loading episodes...
+            </div>
+          ) : (seasonDetails[activeSeason]?.episodes || []).length === 0 ? (
+            <div className="p-6 text-center text-slate-400">
+              No episodes found for this season.
+            </div>
           ) : (
-            <>
-              {(seasonDetails[activeSeason]?.episodes || []).map((ep) => (
+            <div className="divide-y divide-slate-800">
+              {seasonDetails[activeSeason].episodes.map((ep, idx) => (
                 <EpisodeItem
                   key={ep.episode_number}
                   ep={ep}
@@ -250,16 +265,13 @@ const EpisodesTab = ({
                     ep.episode_number
                   )}
                   onToggle={handleToggle}
+                  isLast={
+                    idx ===
+                    seasonDetails[activeSeason].episodes.length - 1
+                  }
                 />
               ))}
-
-              {(seasonDetails[activeSeason]?.episodes || []).length ===
-                0 && (
-                <p className="text-slate-400 text-sm">
-                  No episodes found for this season.
-                </p>
-              )}
-            </>
+            </div>
           )}
         </div>
       </div>

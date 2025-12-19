@@ -9,6 +9,7 @@ import Home from "./pages/Home";
 import Explore from "./pages/Explore";
 import Watchlist from "./pages/Watchlist";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import AdminProtectedRoute from "./routes/AdminProtectedRoute";
 import Profile from "./pages/Profile";
 import ForgotPassword from "./pages/ForgotPassword";
 import SearchPage from "./pages/SearchPage";
@@ -29,7 +30,14 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
-      <Route path="/admin/*" element={<AdminRoutes />} />
+      <Route 
+        path="/admin/*" 
+        element={
+          <AdminProtectedRoute>
+            <AdminRoutes />
+          </AdminProtectedRoute>
+        } 
+      />
       <Route
         path="/login"
         element={!user ? <Login /> : <Navigate to="/home" replace />}

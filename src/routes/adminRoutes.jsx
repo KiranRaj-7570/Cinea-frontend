@@ -6,6 +6,7 @@ import AddTheatre from "../pages/AddTheatre";
 import ManageTheatres from "../pages/ManageTheatres";
 import AddShow from "../pages/AddShow";
 import ManageShows from "../pages/ManageShows";
+import ReviewReports from "../pages/ReviewReports";
 
 const AdminRoutes = () => {
   return (
@@ -16,6 +17,7 @@ const AdminRoutes = () => {
         <Route path="/theatres" element={<ManageTheatres />} />
         <Route path="/shows/add" element={<AddShow />} />
         <Route path="/shows" element={<ManageShows />} />
+        <Route path="/reviews/reports" element={<ReviewReports />} />
       </Route>
     </Routes>
   );
