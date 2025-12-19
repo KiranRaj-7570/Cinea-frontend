@@ -127,7 +127,7 @@ const ReviewReports = () => {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 text-white w-full">
-      <h1 className="text-2xl sm:text-3xl font-bold mb-8 text-[#FF7A1A]">Reported Reviews</h1>
+      <h1 className="text-2xl sm:text-3xl font-bold mt-4  mb-6 text-[#FF7A1A]">Reported Reviews</h1>
 
       {/* FILTERS */}
       <div className="mb-6 flex flex-col sm:flex-row gap-3 sm:gap-4">

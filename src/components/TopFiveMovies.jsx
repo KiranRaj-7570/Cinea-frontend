@@ -1,4 +1,8 @@
+import { useNavigate } from "react-router-dom";
+
 const TopFiveMovies = ({ movies = [], loading }) => {
+  const navigate = useNavigate();
+
   if (loading) {
     return <p className="text-sm text-slate-400">Loading...</p>;
   }
@@ -7,10 +11,22 @@ const TopFiveMovies = ({ movies = [], loading }) => {
     return <p className="text-sm text-slate-500">No top movies yet</p>;
   }
 
+  const handleClick = (item) => {
+    if (item.mediaType === "tv") {
+      navigate(`/series/${item.tmdbId}`);
+    } else {
+      navigate(`/movie/${item.tmdbId}`);
+    }
+  };
+
   return (
     <ul className="space-y-3">
       {movies.map((movie, i) => (
-        <li key={movie.tmdbId} className="flex items-center gap-3">
+        <li
+          key={movie.tmdbId}
+          onClick={() => handleClick(movie)}
+          className="flex items-center gap-3 cursor-pointer hover:opacity-90 transition"
+        >
           <span className="text-[16px] text-[#F6E7C6]">{i + 1}</span>
 
           <img
@@ -20,7 +36,9 @@ const TopFiveMovies = ({ movies = [], loading }) => {
           />
 
           <div className="flex-1">
-            <p className="text-sm font-semibold text-[#FF7A1A]">{movie.title}</p>
+            <p className="text-sm font-semibold text-[#FF7A1A]">
+              {movie.title}
+            </p>
             <p className="text-xs text-[#F6E7C6]">
               Rating: {movie.rating}
             </p>

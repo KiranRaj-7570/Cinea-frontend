@@ -3,7 +3,7 @@ import { AlertTriangle } from "lucide-react";
 
 const AdminSidebar = ({ onNavigate = () => {} }) => {
   const linkClass =
-    "block px-4 py-2 rounded hover:bg-[#1a1a1a] transition";
+  "block px-4 py-2 rounded border-l-2 border-transparent hover:bg-[#1a1a1a] transition";
   const activeLinkClass = "bg-[#FF7A1A]/10 text-[#FF7A1A] border-l-2 border-[#FF7A1A]";
 
   const handleNavClick = () => {
@@ -17,6 +17,7 @@ const AdminSidebar = ({ onNavigate = () => {} }) => {
       <nav className="space-y-2">
         <NavLink
           to="/admin"
+          end
           onClick={handleNavClick}
           className={({ isActive }) =>
             `${linkClass} ${isActive ? activeLinkClass : ""}`
@@ -41,6 +42,7 @@ const AdminSidebar = ({ onNavigate = () => {} }) => {
 
         <NavLink
           to="/admin/theatres"
+          end
           onClick={handleNavClick}
           className={({ isActive }) =>
             `${linkClass} ${isActive ? activeLinkClass : ""}`
@@ -61,6 +63,7 @@ const AdminSidebar = ({ onNavigate = () => {} }) => {
 
         <NavLink
           to="/admin/shows"
+          end
           onClick={handleNavClick}
           className={({ isActive }) =>
             `${linkClass} ${isActive ? activeLinkClass : ""}`
@@ -77,7 +80,7 @@ const AdminSidebar = ({ onNavigate = () => {} }) => {
           to="/admin/reviews/reports"
           onClick={handleNavClick}
           className={({ isActive }) =>
-            `${linkClass} ${isActive ? activeLinkClass : ""} flex items-center gap-2`
+            `${linkClass} ${isActive ? activeLinkClass : ""} flex items-center  gap-2`
           }
         >
           <AlertTriangle size={16} />

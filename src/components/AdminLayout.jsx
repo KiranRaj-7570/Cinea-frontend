@@ -7,14 +7,17 @@ const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-[#0b0b0b] text-white">
+    <div className="flex min-h-screen bg-[#0b0b0b] text-white poppins-regular">
       {/* MOBILE SIDEBAR TOGGLE */}
       <button
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="fixed top-16 left-4 z-50 lg:hidden p-2 hover:bg-[#1a1a1a] rounded transition"
-      >
-        {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
-      </button>
+  onClick={() => setSidebarOpen(!sidebarOpen)}
+  className={`fixed top-4 z-50 lg:hidden p-2 rounded transition text-[#F6E7C6]
+    ${sidebarOpen ? "left-50 bg-[#0f0f0f]" : "left-6 hover:bg-[#1a1a1a]"}
+  
+  `}
+>
+  {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
+</button>
 
       {/* SIDEBAR */}
       <div

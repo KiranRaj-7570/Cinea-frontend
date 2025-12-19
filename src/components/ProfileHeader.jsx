@@ -1,4 +1,4 @@
-import React from "react";
+
 
 const ProfileHeader = ({
   name,
@@ -8,7 +8,11 @@ const ProfileHeader = ({
   followingCount = 0,
   onEdit,
   onAvatar,
+  isOwnProfile,
+  isFollowing,
+  onFollowToggle
 }) => {
+
   const initials = name
     ? name.split(" ").map(p => p[0]).join("").toUpperCase().slice(0, 2)
     : "?";
@@ -28,9 +32,11 @@ const ProfileHeader = ({
               {/* Avatar */}
               <div className="h-28 w-28 rounded-full bg-[#222222] p-[3px] shadow-lg ">
                 <div
-                  onClick={onAvatar}
-                  className="h-full w-full rounded-full bg-black overflow-hidden cursor-pointer flex items-center justify-center"
-                >
+  onClick={isOwnProfile ? onAvatar : undefined}
+  className={`h-full w-full rounded-full bg-black overflow-hidden flex items-center justify-center
+    ${isOwnProfile ? "cursor-pointer" : "cursor-default"}
+  `}
+>
                   {avatar ? (
                     <img
                       src={avatar}
@@ -81,12 +87,21 @@ const ProfileHeader = ({
           </div>
 
           {/* RIGHT: Edit profile */}
-          <button
-            onClick={onEdit}
-            className="bg-[#222222] text-[#FF7A1A] hover:bg-gray-100 px-5 py-2 rounded-full font-semibold shadow-md -mr-20 mt-2"
-          >
-            Edit profile
-          </button>
+          {isOwnProfile ? (
+  <button onClick={onEdit}>Edit profile</button>
+) : (
+  <button
+    onClick={onFollowToggle}
+    className={`px-5 py-2 rounded-full font-semibold shadow-md -mr-20 mt-2
+      ${isFollowing
+        ? "bg-[#222222] text-[#F6E7C6]"
+        : "bg-[#FF7A1A] text-black"}
+    `}
+  >
+    {isFollowing ? "Following" : "Follow"}
+  </button>
+)}
+
         </div>
       </div>
     </header>

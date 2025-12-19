@@ -62,7 +62,7 @@ const GenreDonutChart = ({ data = [], loading }) => {
   return (
     <>
       {/* DONUT */}
-      <div style={{ height: 240 }}>
+      <div style={{ height: 220 }}>
         <ResponsiveContainer>
           <PieChart margin={{ top: 20, right: 0, bottom: 10, left: 0 }}>
             <Pie
@@ -72,7 +72,7 @@ const GenreDonutChart = ({ data = [], loading }) => {
               innerRadius={60}
               outerRadius={80}
               paddingAngle={3}
-              label={({ percent }) => `${Math.round(percent * 100)}%`}
+
               labelLine={false}
             >
               {chartData.map((_, index) => (

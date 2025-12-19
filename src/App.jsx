@@ -16,7 +16,6 @@ import SearchPage from "./pages/SearchPage";
 import MovieDetails from "./pages/MovieDetails";
 import TvDetails from "./pages/TvDetails";
 
-
 import BookShowPage from "./pages/BookShowPage";
 import SeatSelectionPage from "./pages/SeatSelectionPage";
 import PaymentPage from "./pages/PaymentPage";
@@ -30,13 +29,13 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
-      <Route 
-        path="/admin/*" 
+      <Route
+        path="/admin/*"
         element={
           <AdminProtectedRoute>
             <AdminRoutes />
           </AdminProtectedRoute>
-        } 
+        }
       />
       <Route
         path="/login"
@@ -83,6 +82,14 @@ function App() {
           </ProtectedRoute>
         }
       />
+        <Route
+          path="/profile/:id"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
       <Route
         path="/profile"
         element={
@@ -105,18 +112,18 @@ function App() {
       <Route path="/series/:id" element={<TvDetails />} />
       <Route path="/book/:movieId" element={<BookShowPage />} />
       <Route
-  path="/book/:movieId/seats/:showId"
-  element={
-    <ProtectedRoute>
-      <SeatSelectionPage />
-    </ProtectedRoute>
-  }
-/>
+        path="/book/:movieId/seats/:showId"
+        element={
+          <ProtectedRoute>
+            <SeatSelectionPage />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/book/payment/:bookingId" element={<PaymentPage />} />
 
       <Route path="/booking/ticket/:bookingId" element={<TicketPage />} />
 
-      <Route path="/my-bookings" element={<MyBookings/>} />
+      <Route path="/my-bookings" element={<MyBookings />} />
     </Routes>
   );
 }

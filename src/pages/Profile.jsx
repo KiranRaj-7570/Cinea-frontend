@@ -1,10 +1,5 @@
-import {
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  useRef, // ✅ FIXED: missing import
-} from "react";
+import { useContext, useState, useEffect, useCallback, useRef } from "react";
+import { useParams } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import api from "../api/axios";
 
@@ -19,49 +14,94 @@ import WatchTimeChart from "../components/WatchTimeChart";
 import TopFiveMovies from "../components/TopFiveMovies";
 import RecentReviews from "../components/RecentReviews";
 import Toast from "../components/Toast";
+import ProfileSkeleton from "../components/Skeletons/ProfileSkeleton";
 
 const Profile = () => {
+  const { id: routeUserId } = useParams();
   const { user, loginUser } = useContext(AuthContext);
+
+  const isOwnProfile = !routeUserId || routeUserId === user?._id;
+  const targetUserId = isOwnProfile ? user?._id : routeUserId;
+
+  /* ================= PROFILE USER ================= */
+  const [profileUser, setProfileUser] = useState(null);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followersCount, setFollowersCount] = useState(0);
 
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isAvatarOpen, setIsAvatarOpen] = useState(false);
 
+  /* ================= STATS ================= */
   const [stats, setStats] = useState(null);
   const [loadingStats, setLoadingStats] = useState(true);
 
+  /* ================= TOAST ================= */
+  const [toast, setToast] = useState({ show: false, message: "", type: "info" });
+  const showToast = (message, type = "info") =>
+    setToast({ show: true, message, type });
+
+  /* ================= LOAD PROFILE USER ================= */
+  useEffect(() => {
+    if (!user) return;
+
+    if (isOwnProfile) {
+      setProfileUser(user);
+      setFollowersCount(user.followers?.length || 0);
+      return;
+    }
+
+    const loadUser = async () => {
+      try {
+        const res = await api.get(`/auth/users/${routeUserId}`);
+        setProfileUser(res.data.user);
+        setIsFollowing(res.data.user.followers?.includes(user._id));
+        setFollowersCount(res.data.user.followers?.length || 0);
+      } catch {
+        showToast("Failed to load profile", "error");
+      }
+    };
+
+    loadUser();
+  }, [routeUserId, isOwnProfile, user]);
+
+  /* ================= FOLLOW / UNFOLLOW ================= */
+  const handleFollowToggle = async () => {
+    try {
+      await api.post(`/auth/${routeUserId}/follow`);
+
+      // 🔥 OPTIMISTIC — NO REFETCH
+      setIsFollowing((prev) => !prev);
+      setFollowersCount((c) => (isFollowing ? c - 1 : c + 1));
+    } catch {
+      showToast("Failed to update follow", "error");
+    }
+  };
+
+  /* ================= FETCH STATS ================= */
   const fetchStats = useCallback(async () => {
     try {
       setLoadingStats(true);
-      const res = await api.get("/profile/stats");
+
+      const url = isOwnProfile
+        ? "/profile/stats"
+        : `/profile/stats/${routeUserId}`;
+
+      const res = await api.get(url);
       setStats(res.data);
     } catch (err) {
       console.error("Stats fetch error", err);
     } finally {
       setLoadingStats(false);
     }
-  }, []);
-  const [toast, setToast] = useState({
-  show: false,
-  message: "",
-  type: "info",
-});
-
-const showToast = (message, type = "info") => {
-  setToast({ show: true, message, type });
-};
-
-const closeToast = () => {
-  setToast((t) => ({ ...t, show: false }));
-};
+  }, [isOwnProfile, routeUserId]);
 
   useEffect(() => {
-    if (user) fetchStats();
-  }, [user, fetchStats]);
+    if (targetUserId) fetchStats();
+  }, [targetUserId, fetchStats]);
 
-  /* ================= GENRE DONUT DATA ================= */
-
+  /* ================= GENRE DONUT (UNCHANGED) ================= */
   const [genreData, setGenreData] = useState([]);
-  const genreCache = useRef({}); // in-memory cache
+  const genreCache = useRef({});
 
   useEffect(() => {
     if (!stats?.genresSource?.length) {
@@ -72,7 +112,6 @@ const closeToast = () => {
     const fetchGenres = async () => {
       const genreCount = {};
 
-      // Deduplicate TMDB IDs
       const uniqueItems = Array.from(
         new Map(
           stats.genresSource.map((item) => [
@@ -86,7 +125,6 @@ const closeToast = () => {
         uniqueItems.map(async (item) => {
           const cacheKey = `${item.mediaType}-${item.tmdbId}`;
 
-          // Cache hit
           if (genreCache.current[cacheKey]) {
             genreCache.current[cacheKey].forEach((g) => {
               genreCount[g] = (genreCount[g] || 0) + 1;
@@ -96,23 +134,18 @@ const closeToast = () => {
 
           try {
             const res = await fetch(
-              `https://api.themoviedb.org/3/${item.mediaType}/${
-                item.tmdbId
-              }?api_key=${import.meta.env.VITE_TMDB_KEY}`
+              `https://api.themoviedb.org/3/${item.mediaType}/${item.tmdbId}?api_key=${
+                import.meta.env.VITE_TMDB_KEY
+              }`
             );
-
             const data = await res.json();
             const genres = (data.genres || []).map((g) => g.name);
 
-            // Save to cache
             genreCache.current[cacheKey] = genres;
-
             genres.forEach((g) => {
               genreCount[g] = (genreCount[g] || 0) + 1;
             });
-          } catch (err) {
-            console.error("TMDB genre fetch failed", err);
-          }
+          } catch {}
         })
       );
 
@@ -127,45 +160,48 @@ const closeToast = () => {
     fetchGenres();
   }, [stats?.genresSource]);
 
-  /* ================= RENDER ================= */
-
-  if (!user) {
+  if (!profileUser) {
     return (
       <div className="min-h-screen bg-[#111] text-white">
         <Navbar />
-        <div className="flex items-center justify-center h-[70vh]">
-          <p>Loading profile...</p>
-        </div>
+        <ProfileSkeleton />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#111] text-white flex flex-col reem-kufi ">
+    <div className="min-h-screen bg-[#111] text-white flex flex-col reem-kufi">
       <Navbar />
 
-      {/* HEADER */}
       <ProfileHeader
-        name={user.name}
-        bio={user.bio}
-        avatar={user.avatar}
-        followersCount={user.followers?.length || 0}
-        followingCount={user.following?.length || 0}
+        name={profileUser.name}
+        bio={profileUser.bio}
+        avatar={profileUser.avatar}
+        followersCount={followersCount}
+        followingCount={profileUser.following?.length || 0}
+        isOwnProfile={isOwnProfile}
+        isFollowing={isFollowing}
+        onFollowToggle={handleFollowToggle}
         onEdit={() => setIsEditOpen(true)}
-        onAvatar={() => setIsAvatarOpen(true)}
+         onAvatar={() => setIsAvatarOpen(true)} 
       />
 
-      <main className="max-w-6xl mx-auto px-6 mt-20 mb-20">
+      {/* 👇 REST OF YOUR UI IS UNCHANGED 👇 */}
+       <main className="max-w-6xl mx-auto px-6 mt-20 mb-20">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* GENRE DONUT */}
           <div className="bg-[#151515] rounded-3xl p-7 shadow-xl border border-white/5">
-            <h4 className="text-lg mb-4 font-bold antonio text-[#FF7A1A]">Movies by Genre</h4>
-            <GenreDonutChart data={genreData} loading={loadingStats}/>
+            <h4 className="text-lg mb-4 font-bold antonio text-[#FF7A1A]">
+              Movies by Genre
+            </h4>
+            <GenreDonutChart data={genreData} loading={loadingStats} />
           </div>
 
           {/* WATCH TIME */}
           <div className="bg-[#151515] rounded-3xl  p-7 shadow-xl border border-white/5">
-            <h4 className="font-bold antonio text-lg text-[#FF7A1A] mb-3">Watch Time</h4>
+            <h4 className="font-bold antonio text-lg text-[#FF7A1A] mb-3">
+              Watch Time
+            </h4>
             <WatchTimeChart
               data={stats?.watchTime || []}
               loading={loadingStats}
@@ -174,7 +210,9 @@ const closeToast = () => {
             <div className="mt-6 grid grid-cols-2 gap-4 reem-kufi ">
               {/* BEST */}
               <div className="bg-[#111] rounded-xl p-4">
-                <p className="text-[16px] text-green-500 antonio mb-1">Best Rated</p>
+                <p className="text-[16px] text-green-500 antonio mb-1">
+                  Best Rated
+                </p>
 
                 <div className="flex items-baseline gap-2">
                   <span className="text-2xl text-[#F6E7C6]">
@@ -214,7 +252,9 @@ const closeToast = () => {
 
           {/* TOP 5 */}
           <div className="bg-[#151515] rounded-3xl p-7 shadow-xl border border-white/5">
-            <h4 className="font-bold antonio text-lg text-[#FF7A1A] mb-4">Your Top 5</h4>
+            <h4 className="font-bold antonio text-lg text-[#FF7A1A] mb-4">
+              Your Top 5
+            </h4>
             <TopFiveMovies
               movies={stats?.topFive || []}
               loading={loadingStats}
@@ -224,37 +264,49 @@ const closeToast = () => {
 
         {/* RECENT REVIEWS */}
         <div className="mt-10 bg-[#151515] rounded-3xl p-7 shadow-xl border border-white/5">
-          <h4 className="font-bold antonio text-lg text-[#FF7A1A] mb-3">Your Recent Reviews</h4>
+          <h4 className="font-bold antonio text-lg text-[#FF7A1A] mb-3">
+            Your Recent Reviews
+          </h4>
           <RecentReviews
             reviews={stats?.recentReviews || []}
             loading={loadingStats}
           />
         </div>
       </main>
+      {/* (Charts, Top 5, Reviews, Modals, Footer, Toast) */}
 
       <Footer />
 
-      <EditProfileModal
-        isOpen={isEditOpen}
-        onClose={() => setIsEditOpen(false)}
-        user={user}
-        onUpdate={loginUser}
-        onSuccess={() => showToast("Profile updated successfully ", "success")}
-      />
+      {isOwnProfile && (
+        <>
+          <EditProfileModal
+            isOpen={isEditOpen}
+            onClose={() => setIsEditOpen(false)}
+            user={user}
+            onUpdate={loginUser}
+            onSuccess={() =>
+              showToast("Profile updated successfully", "success")
+            }
+          />
 
-      <AvatarModal
-        isOpen={isAvatarOpen}
-        onClose={() => setIsAvatarOpen(false)}
-        user={user}
-        onUpdate={loginUser}
-        onSuccess={() => showToast("Avatar updated successfully ", "success")}
-      />
+          <AvatarModal
+            isOpen={isAvatarOpen}
+            onClose={() => setIsAvatarOpen(false)}
+            user={user}
+            onUpdate={loginUser}
+            onSuccess={() =>
+              showToast("Avatar updated successfully", "success")
+            }
+          />
+        </>
+      )}
+
       <Toast
-  show={toast.show}
-  message={toast.message}
-  type={toast.type}
-  onClose={closeToast}
-/>
+        show={toast.show}
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast((t) => ({ ...t, show: false }))}
+      />
     </div>
   );
 };
