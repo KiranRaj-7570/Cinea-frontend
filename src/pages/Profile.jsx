@@ -8,6 +8,7 @@ import Footer from "../components/Footer";
 import EditProfileModal from "../components/EditProfileModal";
 import AvatarModal from "../components/AvatarModal";
 import ProfileHeader from "../components/ProfileHeader";
+import GoBackButton from "../components/GoBackButton";
 
 import GenreDonutChart from "../components/GenreDonutChart";
 import WatchTimeChart from "../components/WatchTimeChart";
@@ -15,6 +16,7 @@ import TopFiveMovies from "../components/TopFiveMovies";
 import RecentReviews from "../components/RecentReviews";
 import Toast from "../components/Toast";
 import ProfileSkeleton from "../components/Skeletons/ProfileSkeleton";
+import FollowListModal from "../components/FollowListModal";
 
 const Profile = () => {
   const { id: routeUserId } = useParams();
@@ -27,6 +29,8 @@ const Profile = () => {
   const [profileUser, setProfileUser] = useState(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
+  const [showFollowers, setShowFollowers] = useState(false);
+  const [showFollowing, setShowFollowing] = useState(false);
 
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isAvatarOpen, setIsAvatarOpen] = useState(false);
@@ -76,6 +80,17 @@ const Profile = () => {
       showToast("Failed to update follow", "error");
     }
   };
+
+  /* ================= REFETCH USER DATA ================= */
+  const refetchUserData = useCallback(async () => {
+    try {
+      const res = await api.get(`/auth/users/${targetUserId}`);
+      setProfileUser(res.data.user);
+      setFollowersCount(res.data.user.followers?.length || 0);
+    } catch {
+      console.error("Failed to refetch user data");
+    }
+  }, [targetUserId]);
 
   /* ================= FETCH STATS ================= */
   const fetchStats = useCallback(async () => {
@@ -184,10 +199,12 @@ const Profile = () => {
         onFollowToggle={handleFollowToggle}
         onEdit={() => setIsEditOpen(true)}
          onAvatar={() => setIsAvatarOpen(true)} 
+         onFollowersClick={() => setShowFollowers(true)}
+  onFollowingClick={() => setShowFollowing(true)}
       />
 
       {/* 👇 REST OF YOUR UI IS UNCHANGED 👇 */}
-       <main className="max-w-6xl mx-auto px-6 mt-20 mb-20">
+       <main className="max-w-6xl mx-auto px-4 sm:px-6 mt-10 sm:mt-20 mb-20 w-full">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* GENRE DONUT */}
           <div className="bg-[#151515] rounded-3xl p-7 shadow-xl border border-white/5">
@@ -253,7 +270,7 @@ const Profile = () => {
           {/* TOP 5 */}
           <div className="bg-[#151515] rounded-3xl p-7 shadow-xl border border-white/5">
             <h4 className="font-bold antonio text-lg text-[#FF7A1A] mb-4">
-              Your Top 5
+              Top 5
             </h4>
             <TopFiveMovies
               movies={stats?.topFive || []}
@@ -307,6 +324,28 @@ const Profile = () => {
         type={toast.type}
         onClose={() => setToast((t) => ({ ...t, show: false }))}
       />
+      <FollowListModal
+  open={showFollowers}
+  onClose={() => {
+    setShowFollowers(false);
+    if (isOwnProfile) refetchUserData();
+  }}
+  userId={profileUser._id}
+  type="followers"
+  onFollowCountChange={(newCount) => setFollowersCount(newCount)}
+/>
+
+<FollowListModal
+  open={showFollowing}
+  onClose={() => {
+    setShowFollowing(false);
+    if (isOwnProfile) refetchUserData();
+  }}
+  userId={profileUser._id}
+  type="following"
+  onFollowCountChange={(newCount) => setFollowersCount(newCount)}
+/>
+
     </div>
   );
 };

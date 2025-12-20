@@ -7,9 +7,9 @@ const GoBackButton = ({ label = "Back" }) => {
   return (
     <button
       onClick={() => navigate(-1)}
-      className="flex items-center gap-2 text-sm text-[#F6E7C6] hover:text-[#FF7A1A] transition poppins-regular"
+      className="flex items-center gap-1 text-md font-semibold bg-[#181818] hover:text-[#FF7A1A] transition poppins-regular px-3 m-3 mt-24 md:mt-3 py-2 rounded-full"
     >
-      <ArrowLeft size={16} />
+      <ArrowLeft size={18} />
       {label}
     </button>
   );

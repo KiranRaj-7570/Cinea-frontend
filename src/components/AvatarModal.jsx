@@ -1,4 +1,4 @@
-import { Dialog, Transition } from "@headlessui/react";
+import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from "@headlessui/react";
 import { Fragment, useState, useEffect } from "react";
 import api from "../api/axios";
 
@@ -75,7 +75,7 @@ const AvatarModal = ({ isOpen, onClose, onSuccess, user, onUpdate }) => {
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" />
 
         <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Transition.Child
+          <TransitionChild
             as={Fragment}
             enter="ease-out duration-200"
             enterFrom="opacity-0 scale-95 translate-y-2"
@@ -84,10 +84,10 @@ const AvatarModal = ({ isOpen, onClose, onSuccess, user, onUpdate }) => {
             leaveFrom="opacity-100 scale-100 translate-y-0"
             leaveTo="opacity-0 scale-95 translate-y-2"
           >
-            <Dialog.Panel className="bg-[#151515] border border-white/10 rounded-3xl p-6 w-full max-w-sm shadow-2xl">
-              <Dialog.Title className="text-lg font-semibold text-white">
+            <DialogPanel className="bg-[#151515] border border-white/10 rounded-3xl p-6 w-full max-w-sm shadow-2xl">
+              <DialogTitle className="text-lg font-semibold text-white">
                 Update Avatar
-              </Dialog.Title>
+              </DialogTitle>
 
               <p className="text-xs text-slate-400 mt-1">
                 Choose a new profile picture
@@ -113,7 +113,7 @@ const AvatarModal = ({ isOpen, onClose, onSuccess, user, onUpdate }) => {
                 </div>
 
                 <label className="cursor-pointer text-xs">
-                  <span className="px-4 py-1.5 rounded-full border border-white/20 hover:border-orange-400 hover:text-orange-300 transition">
+                  <span className="px-4 py-1.5 rounded-full border text-[#F6E7C6] border-white/20 hover:border-orange-400 hover:text-orange-300 transition">
                     Choose image
                   </span>
                   <input
@@ -161,8 +161,8 @@ const AvatarModal = ({ isOpen, onClose, onSuccess, user, onUpdate }) => {
                   Cancel
                 </button>
               </div>
-            </Dialog.Panel>
-          </Transition.Child>
+            </DialogPanel>
+          </TransitionChild>
         </div>
       </Dialog>
     </Transition>
