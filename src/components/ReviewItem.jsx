@@ -3,10 +3,13 @@ import { AuthContext } from "../context/AuthContext";
 import api from "../api/axios";
 import ConfirmModal from "./ConfirmModal";
 import Toast from "./Toast";
-import { AlertTriangle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Heart, HeartOff,  Trash2, AlertTriangle } from "lucide-react";
 
 const ReviewItem = ({ review, onReply, onLike, onDelete, onEdit }) => {
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const isLiked = review.likes?.includes(user?._id);
 
   const [showReply, setShowReply] = useState(false);
   const [replyText, setReplyText] = useState("");
@@ -25,8 +28,7 @@ const ReviewItem = ({ review, onReply, onLike, onDelete, onEdit }) => {
   const [reportDescription, setReportDescription] = useState("");
   const [toast, setToast] = useState({ show: false, message: "" });
 
-  const showToast = (message) =>
-    setToast({ show: true, message });
+  const showToast = (message) => setToast({ show: true, message });
 
   const isOwner = user && user._id === review.userId;
   const isAdmin = user && user.role === "admin";
@@ -118,7 +120,11 @@ const ReviewItem = ({ review, onReply, onLike, onDelete, onEdit }) => {
       <div className="bg-[#1f1f1f] border border-slate-800 rounded-lg p-3 sm:p-4 poppins-regular">
         <div className="flex items-start gap-3">
           {/* Avatar */}
-          <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-700 shrink-0 flex items-center justify-center text-sm text-white">
+          <div
+            onClick={() => navigate(`/profile/${review.userId}`)}
+            className="w-9 h-9 rounded-full overflow-hidden bg-slate-700 shrink-0
+             flex items-center justify-center text-sm text-white cursor-pointer"
+          >
             {review.userAvatar ? (
               <img
                 src={review.userAvatar}
@@ -134,7 +140,10 @@ const ReviewItem = ({ review, onReply, onLike, onDelete, onEdit }) => {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div>
-                <div className="text-sm font-semibold text-orange-400">
+                <div
+                  onClick={() => navigate(`/profile/${review.userId}`)}
+                  className="text-sm font-semibold text-orange-400 cursor-pointer hover:underline"
+                >
                   {review.username}
                 </div>
                 <div className="text-xs text-slate-400">
@@ -150,11 +159,11 @@ const ReviewItem = ({ review, onReply, onLike, onDelete, onEdit }) => {
             {showEdit ? (
               <div className="mt-3 space-y-2">
                 <div className="flex items-center gap-2">
-                  <label className="text-xs text-slate-300">Rating:</label>
+                  <label className="text-sm text-[#F6E7C6]">Rating:</label>
                   <select
                     value={editRating}
                     onChange={(e) => setEditRating(Number(e.target.value))}
-                    className="bg-[#181818] text-white px-2 py-1 rounded text-xs"
+                    className="bg-[#494949] text-[#F6E7C6] px-2 py-1 rounded text-xs"
                   >
                     {[5, 4, 3, 2, 1].map((n) => (
                       <option key={n} value={n}>
@@ -167,7 +176,7 @@ const ReviewItem = ({ review, onReply, onLike, onDelete, onEdit }) => {
                 <textarea
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}
-                  className="w-full p-2 bg-transparent border border-slate-700 text-white rounded text-sm"
+                  className="w-full p-2 bg-transparent border border-slate-700 text-[#F6E7C6] rounded text-sm"
                   rows={3}
                 />
 
@@ -192,19 +201,14 @@ const ReviewItem = ({ review, onReply, onLike, onDelete, onEdit }) => {
                 </div>
               </div>
             ) : (
-              <p className="mt-2 text-sm text-[#F6E7C6]">
-                {review.text}
-              </p>
+              <p className="mt-2 text-sm text-[#F6E7C6]">{review.text}</p>
             )}
 
             {/* Replies */}
             {review.replies?.length > 0 && (
               <div className="mt-3 space-y-2">
                 {review.replies.map((r, idx) => (
-                  <div
-                    key={idx}
-                    className="text-xs bg-[#2f2f2f]  p-2 rounded"
-                  >
+                  <div key={idx} className="text-xs bg-[#2f2f2f]  p-2 rounded">
                     <div className="font-semibold text-xs text-orange-400">
                       {r.username}
                     </div>
@@ -226,11 +230,19 @@ const ReviewItem = ({ review, onReply, onLike, onDelete, onEdit }) => {
               <span className="text-slate-600">•</span>
 
               <button
-                onClick={() => onLike(review._id)}
-                className="text-slate-400 hover:text-slate-200 transition"
-              >
-                {review.likes?.length || 0} Likes
-              </button>
+  onClick={() => onLike(review._id)}
+  className={`flex items-center gap-1 transition
+    ${isLiked ? "text-red-500" : "text-slate-400 hover:text-red-400"}
+  `}
+>
+  <Heart
+    size={14}
+    className={isLiked ? "fill-red-500" : "fill-none"}
+  />
+  <span className="text-xs">
+    {review.likes?.length || 0}
+  </span>
+</button>
 
               <span className="text-slate-600">•</span>
 
@@ -253,9 +265,11 @@ const ReviewItem = ({ review, onReply, onLike, onDelete, onEdit }) => {
                     disabled={loading}
                     className="text-red-400 hover:text-red-300 transition disabled:opacity-50"
                   >
-                    Delete
+                    <Trash2 size={14} />
                   </button>
-                  {!isOwner && !isAdmin && <span className="text-slate-600">•</span>}
+                  {!isOwner && !isAdmin && (
+                    <span className="text-slate-600">•</span>
+                  )}
                 </>
               )}
 
@@ -273,7 +287,7 @@ const ReviewItem = ({ review, onReply, onLike, onDelete, onEdit }) => {
             {showReply && (
               <div className="mt-2">
                 <textarea
-                  className="w-full bg-transparent border border-slate-700 rounded p-2 text-sm text-white"
+                  className="w-full bg-transparent border border-slate-700 rounded p-2 text-sm text-[#F6E7C6]"
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
                   placeholder="Write a reply..."
@@ -310,7 +324,9 @@ const ReviewItem = ({ review, onReply, onLike, onDelete, onEdit }) => {
 
             <div className="p-4 space-y-4">
               <div>
-                <label className="text-sm font-semibold mb-2 block">Reason</label>
+                <label className="text-sm font-semibold mb-2 block">
+                  Reason
+                </label>
                 <select
                   value={reportReason}
                   onChange={(e) => setReportReason(e.target.value)}
@@ -325,7 +341,9 @@ const ReviewItem = ({ review, onReply, onLike, onDelete, onEdit }) => {
               </div>
 
               <div>
-                <label className="text-sm font-semibold mb-2 block">Description (optional)</label>
+                <label className="text-sm font-semibold mb-2 block">
+                  Description (optional)
+                </label>
                 <textarea
                   value={reportDescription}
                   onChange={(e) => setReportDescription(e.target.value)}

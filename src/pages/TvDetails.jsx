@@ -19,13 +19,12 @@ const TvDetails = () => {
   const [details, setDetails] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
   const [toast, setToast] = useState({ show: false, message: "" });
- const [watchlistRefreshKey, setWatchlistRefreshKey] = useState(0);
+  const [watchlistRefreshKey, setWatchlistRefreshKey] = useState(0);
 
   const [inWatchlist, setInWatchlist] = useState(false);
   const [completed, setCompleted] = useState(false);
 
-  const showToast = (message) =>
-    setToast({ show: true, message });
+  const showToast = (message) => setToast({ show: true, message });
 
   /* ================= LOAD DETAILS ================= */
   useEffect(() => {
@@ -114,11 +113,8 @@ const TvDetails = () => {
             alt={name}
           />
 
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold anton text-[#F6E7C6]">
-              {name}
-            </h1>
-
+          <div className="flex-1 md:mt-30 ">
+            <h1 className="text-3xl font-bold anton text-[#F6E7C6]">{name}</h1>
             <div className="flex gap-3 text-sm text-[#F6E7C6] mt-2">
               <span className="text-yellow-400">
                 ⭐ {vote_average?.toFixed(1)}
@@ -129,30 +125,29 @@ const TvDetails = () => {
             {/* ACTION BUTTONS */}
             <div className="mt-4 flex flex-wrap gap-3">
               <WatchlistButton
-  tmdbId={Number(id)}
-  mediaType="tv"
-  title={name}
-  poster={
-    poster_path
-      ? `https://image.tmdb.org/t/p/w342${poster_path}`
-      : ""
-  }
-  onChange={setInWatchlist}
-  onToast={showToast}
-  refreshKey={watchlistRefreshKey}
-/>
+                tmdbId={Number(id)}
+                mediaType="tv"
+                title={name}
+                poster={
+                  poster_path
+                    ? `https://image.tmdb.org/t/p/w342${poster_path}`
+                    : ""
+                }
+                onChange={setInWatchlist}
+                onToast={showToast}
+                refreshKey={watchlistRefreshKey}
+              />
 
               <MarkSeriesCompletedButton
-  tmdbId={Number(id)}
-  inWatchlist={inWatchlist}
-  completed={completed}
-  onCompletedChange={(val) => {
-    setCompleted(val);
-    setWatchlistRefreshKey((k) => k + 1);
-  }}
-  onToast={showToast}
-/>
-
+                tmdbId={Number(id)}
+                inWatchlist={inWatchlist}
+                completed={completed}
+                onCompletedChange={(val) => {
+                  setCompleted(val);
+                  setWatchlistRefreshKey((k) => k + 1);
+                }}
+                onToast={showToast}
+              />
             </div>
           </div>
         </div>
@@ -194,9 +189,7 @@ const TvDetails = () => {
             seasons={seasons}
             title={name}
             poster={
-              poster_path
-                ? `https://image.tmdb.org/t/p/w342${poster_path}`
-                : ""
+              poster_path ? `https://image.tmdb.org/t/p/w342${poster_path}` : ""
             }
             onToast={showToast}
             inWatchlist={inWatchlist}
@@ -205,25 +198,22 @@ const TvDetails = () => {
           />
         )}
 
-       {activeTab === "reviews" && (
-  <ReviewsTab
-    mediaType="tv"
-    tmdbId={Number(id)}
-    poster={
-      poster_path
-        ? `https://image.tmdb.org/t/p/w342${poster_path}`
-        : ""
-    }
-    title={name}
-    onToast={showToast}
-    onCompleted={() => {
-      setCompleted(true);
-      setWatchlistRefreshKey((k) => k + 1);
-    }}
-    onWatchlistChange={setInWatchlist}
-  />
-)}
-
+        {activeTab === "reviews" && (
+          <ReviewsTab
+            mediaType="tv"
+            tmdbId={Number(id)}
+            poster={
+              poster_path ? `https://image.tmdb.org/t/p/w342${poster_path}` : ""
+            }
+            title={name}
+            onToast={showToast}
+            onCompleted={() => {
+              setCompleted(true);
+              setWatchlistRefreshKey((k) => k + 1);
+            }}
+            onWatchlistChange={setInWatchlist}
+          />
+        )}
       </div>
 
       <Toast

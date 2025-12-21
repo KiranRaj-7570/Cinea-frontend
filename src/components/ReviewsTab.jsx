@@ -44,48 +44,56 @@ const ReviewsTab = ({
   };
 
   const createReview = async (rating, text) => {
-    if (!user) {
-      onToast("Login to post review");
-      return;
-    }
+  if (!user) {
+    onToast("Login to post review");
+    return;
+  }
 
+  try {
+    const res = await api.post("/reviews", {
+      tmdbId,
+      mediaType,
+      rating,
+      text,
+      title,
+      poster,
+    });
+
+    const newReview = res.data.review;
+
+    // 🔥 OPTIMISTIC UI UPDATE (NO REFRESH)
+    setReviews((prev) => [newReview, ...prev]);
+    setTotal((t) => t + 1);
+
+    onToast("Review posted");
+
+    // Ensure sort is recent (without reload)
+    setSort("recent");
+    setPage(1);
+
+    // 🔁 WATCHLIST SYNC (unchanged)
+    onWatchlistChange(true);
     try {
-      await api.post("/reviews", {
-        tmdbId,
-        mediaType,
-        rating,
-        text,
-        title,
-        poster,
-      });
+      await api.post("/watchlist", { tmdbId, mediaType, title, poster });
+    } catch {}
 
-      onToast("Review posted");
-      setPage(1);
-      setSort("recent");
-      setTimeout(() => load(), 300);
-
-      // Update watchlist when review is created
-      onWatchlistChange(true);
-      try {
-        await api.post("/watchlist", { tmdbId, mediaType, title, poster });
-      } catch {}
-
-      // Mark as completed when review is posted (both movie and TV)
-      try {
-        await api.post(`/watchlist/${mediaType}/${Number(tmdbId)}/complete`);
-        onCompleted(true);
-      } catch (err) {
-        console.error("Auto-complete error:", err);
-      }
-
-      if (onReviewCreated) {
-        onReviewCreated();
-      }
+    // 🔁 AUTO COMPLETE (unchanged)
+    try {
+      await api.post(`/watchlist/${mediaType}/${Number(tmdbId)}/complete`);
+      onCompleted(true);
     } catch (err) {
-      console.error("Create review err", err);
-      onToast("Failed to post review");
+      console.error("Auto-complete error:", err);
     }
-  };
+
+    if (onReviewCreated) {
+      onReviewCreated();
+    }
+  } catch (err) {
+    console.error("Create review err", err);
+    onToast("Failed to post review");
+  }
+};
+
 
   const handleReply = async (reviewId, text) => {
     try {
@@ -158,7 +166,7 @@ const ReviewsTab = ({
             setSort(e.target.value);
             setPage(1);
           }}
-          className="bg-[#0B1120] border border-slate-700 text-slate-300 text-sm px-2 py-1 rounded w-full sm:w-auto"
+          className="bg-[#222222] border border-slate-700 text-[#F6E7C6] text-sm px-2 py-1 rounded w-full sm:w-auto"
         >
           <option value="recent">Most recent</option>
           <option value="top">Top rated</option>
@@ -219,14 +227,14 @@ const CreateReviewForm = ({ onSubmit }) => {
   const [text, setText] = useState("");
 
   return (
-    <div className="bg-[#1e1e1e] border border-slate-800 p-3 sm:p-4 rounded-lg">
+    <div className="bg-[#1e1e1e] border border-slate-800 p-3 sm:p-4 rounded-lg poppins-regular">
       <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-        <label className="text-sm text-slate-300">Your rating</label>
+        <label className="text-sm text-[#F6E7C6]">Your rating</label>
 
         <select
           value={rating}
           onChange={(e) => setRating(Number(e.target.value))}
-          className="bg-[#020617] text-white px-2 py-1 rounded text-sm"
+          className="bg-[#3f3f3f] text-[#F6E7C6] px-2 py-1 rounded text-sm"
         >
           {[5, 4, 3, 2, 1].map((n) => (
             <option key={n} value={n}>
@@ -240,8 +248,8 @@ const CreateReviewForm = ({ onSubmit }) => {
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder="Write your review..."
-        className="w-full mt-3 p-2 bg-transparent border border-slate-700 text-white rounded text-sm"
-        rows={4}
+        className="w-full mt-3 p-2 bg-transparent border border-slate-700 text-[#F6E7C6] rounded text-sm"
+        rows={3}
       />
 
       <div className="mt-3 flex flex-col sm:flex-row gap-2">
@@ -253,7 +261,7 @@ const CreateReviewForm = ({ onSubmit }) => {
               setRating(5);
             }
           }}
-          className="px-4 py-2 bg-[#FF7A1A] rounded text-black font-semibold text-sm hover:bg-orange-600 transition"
+          className="px-4 py-2 bg-[#FF7A1A] rounded text-black  text-sm hover:bg-orange-600 transition"
         >
           Post Review
         </button>
@@ -263,7 +271,7 @@ const CreateReviewForm = ({ onSubmit }) => {
             setText("");
             setRating(5);
           }}
-          className="px-4 py-2 border border-slate-700 rounded text-slate-300 text-sm hover:bg-slate-800 transition"
+          className="px-4 py-2 border border-slate-700 rounded text-[#F6E7C6] text-sm hover:bg-slate-800 transition"
         >
           Clear
         </button>

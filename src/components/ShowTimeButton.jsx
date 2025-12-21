@@ -12,7 +12,7 @@ const ShowTimeButton = ({ show, onClick }) => {
   const isLow = seats > 0 && seats <= 30;
 
   const base =
-    "px-1.5 py-1.5 rounded-[9px] border-3 md:px-2 md:py-2 md:rounded-[14px] md:border-4 transition reem-kufi text-sm w-fixed text-center";
+    "px-1.5 py-1.5 rounded-[9px] border-3 md:px-1 md:py-1 md:rounded-[14px] md:border-4 transition reem-kufi text-xl w-fixed text-center";
 
   const styles = isFull
     ? "border-gray-600 text-gray-500 cursor-not-allowed bg-[#0f0f0f]"
@@ -33,7 +33,7 @@ const ShowTimeButton = ({ show, onClick }) => {
           : "Seats available"
       }
     >
-      {formatTime12h(show.time)} • {show.language}
+      {formatTime12h(show.time)}
     </button>
   );
 };

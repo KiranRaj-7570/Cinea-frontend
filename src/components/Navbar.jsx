@@ -6,6 +6,7 @@ import { FiSearch, FiBell, FiMenu, FiX } from "react-icons/fi";
 import useDebounce from "../hooks/useDebounce";
 import api from "../api/axios";
 import ProfileDropdown from "./ProfileDropdown";
+import NotificationsModal from "./NotificationsModal";
 import avatarPlaceholder from "../assets/avatar.png";
 
 const Navbar = () => {
@@ -16,6 +17,8 @@ const Navbar = () => {
   const [mobileMenu, setMobileMenu] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(false);
   const [open, setOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const profileRef = useRef(null);
   const [searchValue, setSearchValue] = useState("");
   const [suggestions, setSuggestions] = useState([]);
@@ -23,6 +26,34 @@ const Navbar = () => {
 
   const debouncedQuery = useDebounce(searchValue, 300);
   const dropdownRef = useRef(null);
+
+  /* ================= FETCH UNREAD COUNT ================= */
+  const fetchUnreadCount = async () => {
+    if (!user) return;
+
+    try {
+      const res = await api.get("/notifications/count/unread");
+      setUnreadCount(res.data.count || 0);
+    } catch (err) {
+      console.error("Failed to fetch unread count", err);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchUnreadCount();
+      // Refresh every 30 seconds
+      const interval = setInterval(fetchUnreadCount, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [user]);
+
+  /* ================= REFRESH UNREAD COUNT WHEN MODAL CLOSES ================= */
+  useEffect(() => {
+    if (!notificationsOpen) {
+      fetchUnreadCount();
+    }
+  }, [notificationsOpen]);
 
   /* ---------------- sync search from URL ---------------- */
   useEffect(() => {
@@ -35,16 +66,6 @@ const Navbar = () => {
     if (item.release_date) return item.release_date.split("-")[0];
     if (item.first_air_date) return item.first_air_date.split("-")[0];
     return "N/A";
-  };
-
-  const getInitials = () => {
-    if (!user?.name) return "?";
-    return user.name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase();
   };
 
   const sortSuggestions = (items, q) => {
@@ -242,7 +263,18 @@ const Navbar = () => {
               </button>
             )}
 
-            <FiBell size={22} className="text-[#F6E7C6] hover:text-orange-400 transition" />
+            {/* BELL ICON WITH BADGE */}
+            <button
+              onClick={() => setNotificationsOpen(true)}
+              className="text-[#F6E7C6] hover:text-orange-400 transition cursor-pointer relative flex items-center justify-center p-1"
+            >
+              <FiBell size={22} />
+              {unreadCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-[#FF7A1A] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </button>
 
             {/* PROFILE AVATAR (RESTORED) */}
             <div className="relative" ref={profileRef}>
@@ -272,7 +304,11 @@ const Navbar = () => {
         )}
       </div>
 
-      {/* MOBILE HAMBURGER */}
+      {/* NOTIFICATIONS MODAL */}
+      <NotificationsModal 
+        open={notificationsOpen} 
+        onClose={() => setNotificationsOpen(false)} 
+      />
       <button
         onClick={() => setMobileMenu(!mobileMenu)}
         className="lg:hidden text-[#F6E7C6] ml-2"
@@ -282,33 +318,109 @@ const Navbar = () => {
 
       {/* MOBILE MENU */}
       {mobileMenu && (
-        <div className="absolute top-[82px] left-0 w-full bg-[#222222] rounded-2xl p-6 flex flex-col gap-4 lg:hidden z-50">
-          <NavLink to="/home" onClick={() => setMobileMenu(false)}>
-            Home
-          </NavLink>
-          <NavLink to="/explore" onClick={() => setMobileMenu(false)}>
-            Explore
-          </NavLink>
-          <NavLink to="/watchlist" onClick={() => setMobileMenu(false)}>
-            Watchlist
-          </NavLink>
-          <NavLink to="/booking" onClick={() => setMobileMenu(false)}>
-            Book Show
-          </NavLink>
+  <div className="absolute top-[82px] left-0 w-full bg-[#1b1b1b] rounded-2xl p-3 flex flex-col gap-1 lg:hidden z-50 shadow-xl border border-white/5">
 
-          <hr className="border-slate-700" />
+    {/* PRIMARY NAV */}
+    <NavLink
+      to="/home"
+      onClick={() => setMobileMenu(false)}
+      className="px-4 py-3 rounded-xl hover:bg-white/5 transition"
+    >
+      Home
+    </NavLink>
 
-          <button onClick={() => navigate("/profile")} className="text-left">
-            Profile
-          </button>
-          <button onClick={() => navigate("/my-bookings")} className="text-left">
-            My Bookings
-          </button>
-          <button onClick={handleLogout} className="text-left text-red-400">
-            Logout
-          </button>
-        </div>
+    <NavLink
+      to="/explore"
+      onClick={() => setMobileMenu(false)}
+      className="px-4 py-3 rounded-xl hover:bg-white/5 transition"
+    >
+      Explore
+    </NavLink>
+
+    <NavLink
+      to="/watchlist"
+      onClick={() => setMobileMenu(false)}
+      className="px-4 py-3 rounded-xl hover:bg-white/5 transition"
+    >
+      Watchlist
+    </NavLink>
+
+    <NavLink
+      to="/booking"
+      onClick={() => setMobileMenu(false)}
+      className="px-4 py-3 rounded-xl hover:bg-white/5 transition"
+    >
+      Book Show
+    </NavLink>
+
+    {/* DIVIDER */}
+    <div className="my-2 h-px bg-white/10" />
+
+    {/* NOTIFICATIONS */}
+    <button
+      onClick={() => {
+        setNotificationsOpen(true);
+        setMobileMenu(false);
+      }}
+      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition text-left"
+    >
+      <FiBell size={18} className="text-[#F6E7C6]" />
+      <span className="text-[#F6E7C6]">Notifications</span>
+
+      {unreadCount > 0 && (
+        <span className="ml-auto bg-[#FF7A1A] text-black text-xs font-bold px-2 py-0.5 rounded-full">
+          {unreadCount > 9 ? "9+" : unreadCount}
+        </span>
       )}
+    </button>
+
+    {/* ADMIN (only if admin) */}
+    {user?.role === "admin" && (
+      <button
+        onClick={() => {
+          navigate("/admin");
+          setMobileMenu(false);
+        }}
+        className="px-4 py-3 rounded-xl hover:bg-white/5 transition text-left text-[#F6E7C6]"
+      >
+        Admin
+      </button>
+    )}
+
+    {/* DIVIDER */}
+    <div className="my-2 h-px bg-white/10" />
+
+    {/* PROFILE ACTIONS */}
+    <button
+      onClick={() => {
+        navigate("/profile");
+        setMobileMenu(false);
+      }}
+      className="px-4 py-3 rounded-xl hover:bg-white/5 transition text-left"
+    >
+      Profile
+    </button>
+
+    <button
+      onClick={() => {
+        navigate("/my-bookings");
+        setMobileMenu(false);
+      }}
+      className="px-4 py-3 rounded-xl hover:bg-white/5 transition text-left"
+    >
+      My Bookings
+    </button>
+
+    {/* LOGOUT */}
+    <button
+      onClick={handleLogout}
+      className="px-4 py-3 rounded-xl hover:bg-red-500/10 transition text-left text-red-400"
+    >
+      Logout
+    </button>
+  </div>
+)}
+
     </nav>
   );
 };

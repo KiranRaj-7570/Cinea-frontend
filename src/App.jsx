@@ -82,14 +82,14 @@ function App() {
           </ProtectedRoute>
         }
       />
-        <Route
-          path="/profile/:id"
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
+      <Route
+        path="/profile/:id"
+        element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/profile"
         element={
@@ -108,9 +108,30 @@ function App() {
           </ProtectedRoute>
         }
       />
-      <Route path="/movie/:id" element={<MovieDetails />} />
-      <Route path="/series/:id" element={<TvDetails />} />
-      <Route path="/book/:movieId" element={<BookShowPage />} />
+      <Route
+        path="/movie/:id"
+        element={
+          <ProtectedRoute>
+            <MovieDetails />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/series/:id"
+        element={
+          <ProtectedRoute>
+            <TvDetails />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/book/:movieId"
+        element={
+          <ProtectedRoute>
+            <BookShowPage />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/book/:movieId/seats/:showId"
         element={
@@ -119,11 +140,32 @@ function App() {
           </ProtectedRoute>
         }
       />
-      <Route path="/book/payment/:bookingId" element={<PaymentPage />} />
+      <Route
+        path="/book/payment/:bookingId"
+        element={
+          <ProtectedRoute>
+            <PaymentPage />
+          </ProtectedRoute>
+        }
+      />
 
-      <Route path="/booking/ticket/:bookingId" element={<TicketPage />} />
+      <Route
+        path="/booking/ticket/:bookingId"
+        element={
+          <ProtectedRoute>
+            <TicketPage />
+          </ProtectedRoute>
+        }
+      />
 
-      <Route path="/my-bookings" element={<MyBookings />} />
+      <Route
+        path="/my-bookings"
+        element={
+          <ProtectedRoute>
+            <MyBookings />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 }

@@ -24,7 +24,7 @@ const BookShowPage = () => {
   const cityFromUrl = searchParams.get("city");
 
   const [movie, setMovie] = useState(null);
-  const [city, setCity] = useState(cityFromUrl || "Chennai");
+  const [city, setCity] = useState(cityFromUrl || "");
   const [date, setDate] = useState(
     dateFromUrl ? normalizeDate(dateFromUrl) : normalizeDate(new Date())
   );
@@ -69,7 +69,7 @@ const BookShowPage = () => {
 <div className="flex-1 pb-24">
       {/* MOVIE INFO */}
       
-      <div className="max-w-7xl mx-auto px-6 mt-12">
+      <div className="max-w-7xl mx-auto px-6 -mt-15 md:mt-12">
         <div className="mb-4">
           <GoBackButton label="Go Back" />
         </div>
@@ -90,7 +90,7 @@ const BookShowPage = () => {
         </div>
 
       {/* THEATRES */}
-      <div className="max-w-7xl mx-auto px-6 mt-10 space-y-6">
+      <div className="max-w-7xl mx-auto px-6 mt-3 space-y-1">
         {loading && (
           <>
             <ShowTimeSkeleton />
