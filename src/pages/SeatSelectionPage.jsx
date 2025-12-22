@@ -97,10 +97,9 @@ useEffect(() => {
   };
   return (
     <div className="min-h-screen bg-linear-to-b from-[#2f2f2f] via-[#111] to-[#141414] text-white overflow-y-hidden max-w-screen">
-      <Navbar />
 
       <div className="pt-24 md:pt-28">
-        <div className="mb-4 px-6 md:px-16 lg:px-36">
+        <div className="absolute top-0 left-0 z-20">
           <GoBackButton label="Go Back" />
         </div>
         <h1 className="text-4xl text-[#FBF4E2] px-6 md:px-16 lg:px-36 anton mb-6">

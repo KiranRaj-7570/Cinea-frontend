@@ -1,5 +1,4 @@
 import { StarIcon } from "lucide-react";
-import React from "react";
 
 const IMG = "https://image.tmdb.org/t/p/w780";
 
@@ -17,10 +16,9 @@ const BackdropCard = ({ item, onClick }) => {
     >
       <div
         className="
-          rounded-xl overflow-hidden bg-[#181818] border border-slate-800
-          shadow-lg transition-all duration-300 transform
-          
-          group-hover:shadow-[0px_0px_4px_0px_rgba(255,122,26,1)]
+          rounded-xl overflow-hidden bg-[#F6E7C6] border border-slate-800
+          shadow-lg transition-all duration-300 transform 
+          group-hover:border-[#fff4c6]
         "
       >
         <img
@@ -34,12 +32,18 @@ const BackdropCard = ({ item, onClick }) => {
         />
 
         <div className="p-2">
-          <p className="text-sm font-semibold text-[#F6E7C6] truncate">
+          <p className="text-sm md:text-xl anton text-[#222] truncate">
             {title}
           </p>
-          <p className="text-xs text-slate-400">{year}</p>
-          <p className="text-xs text-yellow-400">
-            <StarIcon className="inline mr-1 border-0 outline-0 mb-1" size={14} color="#ffd500" fill="#ffd500"/> {item.vote_average?.toFixed(1)}
+          <p className="text-xs md:text-sm text-[#222] poppins-regular">{year}</p>
+          <p className="text-xs md:text-sm text-[#222] antonio">
+            <StarIcon
+                className="inline mr-1 border-0 outline-0 mb-1"
+                size={14}
+                md:size={24}
+                color="#ff8636"
+                fill="#ff8636"
+              /> {item.vote_average?.toFixed(1)}
           </p>
         </div>
       </div>

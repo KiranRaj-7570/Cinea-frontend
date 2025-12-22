@@ -28,11 +28,11 @@ const BookMoviesPage = () => {
       if (res.data && res.data.length > 0) {
         setCity(res.data[0]);
       } else {
-        setCity("Chennai");
+        setCity("Kollam");
       }
     } catch (err) {
       console.error("Failed to fetch cities", err);
-      setCity("Chennai");
+      setCity("Kollam");
     }
   };
 

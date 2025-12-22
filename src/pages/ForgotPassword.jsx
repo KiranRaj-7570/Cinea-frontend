@@ -25,7 +25,7 @@ const ForgotPassword = () => {
       setLoading(true);
       setMessage("");
       await api.post("/auth/forgot-password", { email });
-      setMessage("OTP sent to your email!");
+      setMessage("OTP sent to your email");
       goNext();
     } catch (err) {
       setMessage(err.response?.data?.msg || "Server error");
@@ -41,7 +41,7 @@ const ForgotPassword = () => {
       setLoading(true);
       setMessage("");
       await api.post("/auth/verify-otp", { email, otp });
-      setMessage("OTP Verified!");
+      setMessage("OTP verified");
       goNext();
     } catch (err) {
       setMessage(err.response?.data?.msg || "Invalid OTP");
@@ -52,7 +52,7 @@ const ForgotPassword = () => {
 
   const handleResetPassword = async () => {
     if (!newPassword || newPassword.length < 6) {
-      return setMessage("Password must be 6+ characters!");
+      return setMessage("Password must be at least 6 characters");
     }
 
     try {
@@ -65,10 +65,8 @@ const ForgotPassword = () => {
         newPassword,
       });
 
-      // 🔥 Auto Login after reset
       loginUser(res.data.user);
-
-      setMessage("Password reset successful! Redirecting...");
+      setMessage("Password reset successful");
       setTimeout(() => navigate("/home"), 1000);
     } catch (err) {
       setMessage(err.response?.data?.msg || "Error resetting password");
@@ -78,85 +76,111 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#050816] text-white flex flex-col justify-center items-center px-4">
-      <div className="w-full max-w-md bg-[#0B1120] border border-slate-800 rounded-2xl p-8 shadow-xl relative overflow-hidden">
+    <div className="min-h-screen bg-[#0b0b0b] flex items-center justify-center ">
+      <div className="w-full max-w-md bg-[#151515] border border-white/10 rounded-3xl p-8 shadow-2xl overflow-hidden">
         
-        {/* Slide container */}
+      
         <div
           className="flex transition-transform duration-300"
           style={{ transform: `translateX(-${(step - 1) * 100}%)` }}
         >
 
-          {/* STEP 1: Email */}
-          <section className="w-full shrink-0">
-            <h2 className="text-xl font-bold mb-4">Reset Password</h2>
+          <section className="w-full shrink-0 p-8">
+            <h2 className="text-2xl anton text-[#F6E7C6] mb-2">
+              Forgot Password
+            </h2>
+            <p className="text-sm text-slate-400 mb-5">
+              Enter your registered email
+            </p>
+
             <input
               type="email"
-              placeholder="Your email"
-              className="w-full p-3 rounded-lg bg-slate-900 border border-slate-700 focus:border-indigo-500 outline-none"
+              placeholder="Email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl bg-[#0f0f0f] border border-white/10 focus:border-[#FF7A1A] outline-none text-white"
             />
 
             <button
               disabled={loading}
               onClick={handleSendOtp}
-              className="w-full mt-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 rounded-lg font-semibold disabled:opacity-60 transition"
+              className="w-full mt-6 py-3 rounded-full bg-[#FF7A1A] text-black font-semibold hover:bg-orange-600 transition disabled:opacity-60"
             >
-              {loading ? "Sending..." : "Send OTP"}
+              {loading ? "Sending OTP..." : "Send OTP"}
             </button>
 
-            <Link to="/login" className="block text-slate-400 text-xs mt-4 hover:text-white">
+            <Link
+              to="/login"
+              className="block text-center text-xs text-slate-400 mt-4 hover:text-[#F6E7C6]"
+            >
               Back to Login
             </Link>
           </section>
 
-          {/* STEP 2: OTP */}
-          <section className="w-full shrink-0">
-            <h2 className="text-xl font-bold mb-4">Enter OTP</h2>
+          
+          <section className="w-full shrink-0 p-8">
+            <h2 className="text-2xl anton text-[#F6E7C6] mb-2">
+              Verify OTP
+            </h2>
+            <p className="text-sm text-slate-400 mb-5">
+              Enter the 6-digit code
+            </p>
+
             <input
               type="text"
-              placeholder="6-digit OTP"
-              className="w-full p-3 text-center tracking-widest rounded-lg bg-slate-900 border border-slate-700 focus:border-indigo-500 outline-none"
+              placeholder="••••••"
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
+              className="w-full px-4 py-3 text-center tracking-widest rounded-xl bg-[#0f0f0f] border border-white/10 focus:border-[#FF7A1A] outline-none text-white"
             />
 
-            <div className="flex gap-2 mt-5">
-              <button onClick={goBack} className="w-1/2 py-2.5 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold">
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={goBack}
+                className="w-1/2 py-3 rounded-full bg-[#1c1c1c] border border-white/10 text-[#F6E7C6]"
+              >
                 Back
               </button>
 
               <button
                 disabled={loading}
                 onClick={handleVerifyOtp}
-                className="w-1/2 py-2.5 bg-indigo-600 hover:bg-indigo-700 rounded-lg font-semibold disabled:opacity-60"
+                className="w-1/2 py-3 rounded-full bg-[#FF7A1A] text-black font-semibold hover:bg-orange-600 transition disabled:opacity-60"
               >
-                {loading ? "Checking..." : "Verify OTP"}
+                {loading ? "Verifying..." : "Verify"}
               </button>
             </div>
           </section>
 
-          {/* STEP 3: New Password */}
-          <section className="w-full shrink-0">
-            <h2 className="text-xl font-bold mb-4">New Password</h2>
+          
+          <section className="w-full shrink-0 p-8">
+            <h2 className="text-2xl anton text-[#F6E7C6] mb-2">
+              New Password
+            </h2>
+            <p className="text-sm text-slate-400 mb-5">
+              Set a new secure password
+            </p>
+
             <input
               type="password"
               placeholder="New password"
-              className="w-full p-3 rounded-lg bg-slate-900 border border-slate-700 focus:border-indigo-500 outline-none"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl bg-[#0f0f0f] border border-white/10 focus:border-[#FF7A1A] outline-none text-white"
             />
 
-            <div className="flex gap-2 mt-5">
-              <button onClick={goBack} className="w-1/2 py-2.5 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold">
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={goBack}
+                className="w-1/2 py-3 rounded-full bg-[#1c1c1c] border border-white/10 text-[#F6E7C6]"
+              >
                 Back
               </button>
 
               <button
                 disabled={loading}
                 onClick={handleResetPassword}
-                className="w-1/2 py-2.5 bg-green-600 hover:bg-green-700 rounded-lg font-semibold disabled:opacity-60"
+                className="w-1/2 py-3 rounded-full bg-[#FF7A1A] text-black font-semibold hover:bg-orange-600 transition disabled:opacity-60"
               >
                 {loading ? "Saving..." : "Reset"}
               </button>
@@ -165,7 +189,9 @@ const ForgotPassword = () => {
         </div>
 
         {message && (
-          <p className="mt-4 text-center text-xs text-amber-300">{message}</p>
+          <p className="mt-5 text-center text-xs text-[#FF7A1A]">
+            {message}
+          </p>
         )}
       </div>
     </div>

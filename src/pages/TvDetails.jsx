@@ -85,10 +85,11 @@ const TvDetails = () => {
 
   return (
     <div className="min-h-screen bg-[#161616] text-white">
-      <Navbar />
-
-      {/* ================= HERO ================= */}
+  
       <div className="relative">
+        <div className="absolute top-0 left-0 z-20">
+          <GoBackButton label="Back" />
+        </div>
         <div className="h-[35vh] md:h-[50vh] w-full overflow-hidden">
           <img
             src={

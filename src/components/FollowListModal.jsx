@@ -19,7 +19,12 @@ const FollowListModal = ({ open, onClose, userId, type, onFollowCountChange }) =
       try {
         setLoading(true);
         const res = await api.get(`/auth/users/${userId}/${type}`);
-        setUsers(res.data.users || []);
+        setUsers(
+  (res.data.users || []).map((u) => ({
+    ...u,
+    isFollowing: u.isFollowing ?? false,
+  }))
+);
       } catch {
         console.error("Failed to load follow list");
       } finally {
@@ -32,7 +37,26 @@ const FollowListModal = ({ open, onClose, userId, type, onFollowCountChange }) =
 
   /* ================= FOLLOW / UNFOLLOW ================= */
   const toggleFollow = async (targetId) => {
-    // 🔥 OPTIMISTIC FIRST (removes lag)
+  let delta = 0;
+
+  setUsers((prev) =>
+    prev.map((u) => {
+      if (u._id === targetId) {
+        delta = u.isFollowing ? -1 : 1;
+        return { ...u, isFollowing: !u.isFollowing };
+      }
+      return u;
+    })
+  );
+
+  if (onFollowCountChange) {
+    onFollowCountChange((prev) => prev + delta);
+  }
+
+  try {
+    await api.post(`/auth/${targetId}/follow`);
+  } catch {
+    // rollback
     setUsers((prev) =>
       prev.map((u) =>
         u._id === targetId
@@ -41,26 +65,12 @@ const FollowListModal = ({ open, onClose, userId, type, onFollowCountChange }) =
       )
     );
 
-    try {
-      await api.post(`/auth/${targetId}/follow`);
-      // 🔄 REFETCH to sync with server state
-      const res = await api.get(`/auth/users/${userId}/${type}`);
-      setUsers(res.data.users || []);
-      // 📢 Notify parent about count change
-      if (onFollowCountChange) {
-        onFollowCountChange(res.data.users?.length || 0);
-      }
-    } catch {
-      // rollback if API fails
-      setUsers((prev) =>
-        prev.map((u) =>
-          u._id === targetId
-            ? { ...u, isFollowing: !u.isFollowing }
-            : u
-        )
-      );
+    if (onFollowCountChange) {
+      onFollowCountChange((prev) => prev - delta);
     }
-  };
+  }
+};
+
 
   if (!open) return null;
 
@@ -102,9 +112,7 @@ const FollowListModal = ({ open, onClose, userId, type, onFollowCountChange }) =
 
           {users.map((u) => {
             const isMe = u._id === user?._id;
-            const following =
-              u.isFollowing ??
-              user?.following?.includes(u._id);
+            const following = u.isFollowing === true;
 
             return (
               <div

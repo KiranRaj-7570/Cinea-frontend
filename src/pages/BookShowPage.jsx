@@ -22,16 +22,28 @@ const BookShowPage = () => {
 
   const dateFromUrl = searchParams.get("date");
   const cityFromUrl = searchParams.get("city");
-
+  
+  const defaultCity =
+  cityFromUrl ||
+  localStorage.getItem("city") ||
+  "Kollam";
   const [movie, setMovie] = useState(null);
-  const [city, setCity] = useState(cityFromUrl || "");
+  const [city, setCity] = useState(defaultCity );
   const [date, setDate] = useState(
     dateFromUrl ? normalizeDate(dateFromUrl) : normalizeDate(new Date())
   );
 
   const [theatres, setTheatres] = useState([]);
   const [loading, setLoading] = useState(true);
+  useEffect(() => {
+  if (!city) return;
 
+  const formattedDate = date.toLocaleDateString("en-CA");
+  navigate(
+    `/book/${movieId}?city=${city}&date=${formattedDate}`,
+    { replace: true }
+  );
+}, [city, date, movieId]);
   useEffect(() => {
     loadMovie();
   }, [movieId]);
@@ -47,30 +59,31 @@ const BookShowPage = () => {
   };
 
   const loadShows = async () => {
-    try {
-      setLoading(true);
-      const formattedDate = date.toLocaleDateString("en-CA");
+  if (!city || !date) return; // ✅ guard
 
-      const res = await api.get(
-        `/shows/movie/${movieId}?city=${city}&date=${formattedDate}`
-      );
+  try {
+    setLoading(true);
+    const formattedDate = date.toLocaleDateString("en-CA");
 
-      setTheatres(res.data);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const res = await api.get(
+      `/shows/movie/${movieId}?city=${city}&date=${formattedDate}`
+    );
+
+    setTheatres(res.data);
+  } finally {
+    setLoading(false);
+  }
+};
 
   if (!movie) return null;
 
   return (
     <div className="min-h-screen pt-16 bg-linear-to-b from-[#2f2f2f] via-[#111] to-[#141414] text-white">
-      <Navbar />
 <div className="flex-1 pb-24">
       {/* MOVIE INFO */}
       
-      <div className="max-w-7xl mx-auto px-6 -mt-15 md:mt-12">
-        <div className="mb-4">
+      <div className="max-w-7xl mx-auto px-6 mt-3 md:mt-12">
+        <div className="absolute top-0 left-0 z-20">
           <GoBackButton label="Go Back" />
         </div>
         <h1 className="text-4xl font-bold tracking-normal anton text-[#F6E7C6]">{movie.title}</h1>

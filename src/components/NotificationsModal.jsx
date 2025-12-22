@@ -12,40 +12,38 @@ const NotificationsModal = ({ open, onClose }) => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  /* ================= FETCH ================= */
-  useEffect(() => {
-    if (!open) return;
+useEffect(() => {
+  if (!open) return;
 
-    const fetchNotifications = async () => {
-      try {
-        setLoading(true);
-        const res = await api.get("/notifications");
-        setNotifications(res.data.notifications || []);
-      } catch (err) {
-        console.error("Failed to fetch notifications", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchNotifications = async () => {
+    try {
+      setLoading(true);
 
-    fetchNotifications();
-  }, [open]);
+      const res = await api.get("/notifications");
+      setNotifications(res.data.notifications || []);
+      await api.patch("/notifications/read-all");
 
-  /* ================= MARK READ ================= */
+    } catch (err) {
+      console.error("Failed to fetch notifications", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchNotifications();
+}, [open]);
+
   const markAsRead = async (id) => {
     try {
       await api.patch(`/notifications/${id}/read`);
       setNotifications((prev) =>
-        prev.map((n) =>
-          n._id === id ? { ...n, read: true } : n
-        )
+        prev.map((n) => (n._id === id ? { ...n, read: true } : n))
       );
     } catch (err) {
       console.error("Mark read failed", err);
     }
   };
 
-  /* ================= DELETE ================= */
   const deleteNotification = async (id) => {
     try {
       await api.delete(`/notifications/${id}`);
@@ -55,16 +53,12 @@ const NotificationsModal = ({ open, onClose }) => {
     }
   };
 
-  /* ================= ROW CLICK ================= */
   const handleRowClick = (notif) => {
     markAsRead(notif._id);
 
     if (notif.type === "follow") {
       navigate(`/profile/${notif.fromUserId._id}`);
-    } else if (
-      notif.type === "review_like" ||
-      notif.type === "review_reply"
-    ) {
+    } else if (notif.type === "review_like" || notif.type === "review_reply") {
       navigate(`/movie/${notif.movieId}#reviews`);
     } else if (notif.type === "booking_reminder") {
       navigate(`/my-bookings`);
@@ -79,14 +73,13 @@ const NotificationsModal = ({ open, onClose }) => {
     <>
       {/* BACKDROP */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[55]"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-55"
         onClick={onClose}
       />
 
       {/* MODAL */}
-      <div className="fixed inset-0 z-[60] flex justify-end pointer-events-none">
+      <div className="fixed inset-0 z-60 flex justify-end pointer-events-none">
         <div className="bg-[#111] w-full sm:w-96 h-full rounded-l-2xl border-l border-white/10 shadow-xl flex flex-col pointer-events-auto">
-
           {/* HEADER */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
             <h2 className="text-lg font-semibold text-[#F6E7C6]">

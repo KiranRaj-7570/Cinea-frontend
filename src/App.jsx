@@ -46,6 +46,7 @@ function App() {
         path="/signup"
         element={!user ? <Signup /> : <Navigate to="/home" replace />}
       />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
 
       <Route
         path="/home"
@@ -98,7 +99,6 @@ function App() {
           </ProtectedRoute>
         }
       />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
 
       <Route
         path="/search"

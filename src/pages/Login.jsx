@@ -35,7 +35,7 @@ const Login = () => {
     <div className="min-h-screen bg-black flex items-center justify-center px-4">
       <div className="w-full max-w-md bg-[#1A1A1A] p-8 rounded-2xl shadow-lg border border-gray-700">
         <h2 className="text-3xl font-bold text-center text-white mb-6">
-          Welcome Back 👋
+          Welcome Back
         </h2>
 
         <form className="space-y-4" onSubmit={handleLogin}>
@@ -59,7 +59,7 @@ const Login = () => {
 
           <button
             type="submit"
-            disabled={loading} // 🔥 Disable during login
+            disabled={loading} 
             className={`w-full font-semibold py-2 rounded-md transition 
               ${loading ? "bg-gray-600 cursor-not-allowed" : "bg-[#FF7A1A] hover:bg-[#f6f6f6] text-black"}`}
           >

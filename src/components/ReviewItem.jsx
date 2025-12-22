@@ -4,7 +4,8 @@ import api from "../api/axios";
 import ConfirmModal from "./ConfirmModal";
 import Toast from "./Toast";
 import { useNavigate } from "react-router-dom";
-import { Heart, HeartOff,  Trash2, AlertTriangle } from "lucide-react";
+import { Heart, Trash2, AlertTriangle } from "lucide-react";
+import defaultAvatar from "../assets/avatar.png";
 
 const ReviewItem = ({ review, onReply, onLike, onDelete, onEdit }) => {
   const { user } = useContext(AuthContext);
@@ -21,7 +22,6 @@ const ReviewItem = ({ review, onReply, onLike, onDelete, onEdit }) => {
   const [loading, setLoading] = useState(false);
   const [reportLoading, setReportLoading] = useState(false);
 
-  /* confirm + toast state */
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
@@ -36,16 +36,12 @@ const ReviewItem = ({ review, onReply, onLike, onDelete, onEdit }) => {
   const canDelete = isOwner || isAdmin;
   const canEdit = isOwner;
 
-  /* ================= REPLY ================= */
-
   const handleReply = () => {
     if (!replyText.trim()) return;
     onReply(review._id, replyText.trim());
     setReplyText("");
     setShowReply(false);
   };
-
-  /* ================= EDIT ================= */
 
   const handleEdit = async () => {
     if (!editText.trim()) return;
@@ -71,8 +67,6 @@ const ReviewItem = ({ review, onReply, onLike, onDelete, onEdit }) => {
     }
   };
 
-  /* ================= DELETE ================= */
-
   const confirmDelete = async () => {
     setLoading(true);
     try {
@@ -87,8 +81,6 @@ const ReviewItem = ({ review, onReply, onLike, onDelete, onEdit }) => {
       setConfirmOpen(false);
     }
   };
-
-  /* ================= REPORT ================= */
 
   const handleReport = async () => {
     if (!reportReason.trim()) {
@@ -119,7 +111,6 @@ const ReviewItem = ({ review, onReply, onLike, onDelete, onEdit }) => {
     <>
       <div className="bg-[#1f1f1f] border border-slate-800 rounded-lg p-3 sm:p-4 poppins-regular">
         <div className="flex items-start gap-3">
-          {/* Avatar */}
           <div
             onClick={() => navigate(`/profile/${review.userId}`)}
             className="w-9 h-9 rounded-full overflow-hidden bg-slate-700 shrink-0
@@ -132,7 +123,11 @@ const ReviewItem = ({ review, onReply, onLike, onDelete, onEdit }) => {
                 className="w-full h-full object-cover"
               />
             ) : (
-              review.username?.[0] || "U"
+              <img
+                src={defaultAvatar}
+                alt="avatar"
+                className="w-full h-full object-cover"
+              />
             )}
           </div>
 
@@ -147,7 +142,13 @@ const ReviewItem = ({ review, onReply, onLike, onDelete, onEdit }) => {
                   {review.username}
                 </div>
                 <div className="text-xs text-slate-400">
-                  {new Date(review.createdAt).toLocaleString()}
+                  {new Date(review.createdAt).toLocaleString(undefined, {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </div>
               </div>
               <div className="text-sm text-yellow-400 shrink-0">
@@ -155,7 +156,6 @@ const ReviewItem = ({ review, onReply, onLike, onDelete, onEdit }) => {
               </div>
             </div>
 
-            {/* Edit mode */}
             {showEdit ? (
               <div className="mt-3 space-y-2">
                 <div className="flex items-center gap-2">
@@ -230,19 +230,17 @@ const ReviewItem = ({ review, onReply, onLike, onDelete, onEdit }) => {
               <span className="text-slate-600">•</span>
 
               <button
-  onClick={() => onLike(review._id)}
-  className={`flex items-center gap-1 transition
+                onClick={() => onLike(review._id)}
+                className={`flex items-center gap-1 transition
     ${isLiked ? "text-red-500" : "text-slate-400 hover:text-red-400"}
   `}
->
-  <Heart
-    size={14}
-    className={isLiked ? "fill-red-500" : "fill-none"}
-  />
-  <span className="text-xs">
-    {review.likes?.length || 0}
-  </span>
-</button>
+              >
+                <Heart
+                  size={14}
+                  className={isLiked ? "fill-red-500" : "fill-none"}
+                />
+                <span className="text-xs">{review.likes?.length || 0}</span>
+              </button>
 
               <span className="text-slate-600">•</span>
 

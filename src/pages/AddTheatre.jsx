@@ -54,7 +54,7 @@ const AddTheatre = () => {
         <label className="block text-sm font-semibold mb-2">City</label>
         <input
           className="w-full p-3 rounded-lg bg-[#151515] border border-slate-700 focus:border-[#FF7A1A] focus:outline-none transition"
-          placeholder="e.g., Chennai"
+          placeholder="e.g., Trivandrum"
           value={city}
           onChange={(e) => setCity(e.target.value)}
         />

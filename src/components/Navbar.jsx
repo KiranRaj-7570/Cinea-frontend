@@ -262,8 +262,7 @@ const Navbar = () => {
                 Admin
               </button>
             )}
-
-            {/* BELL ICON WITH BADGE */}
+ 
             <button
               onClick={() => setNotificationsOpen(true)}
               className="text-[#F6E7C6] hover:text-orange-400 transition cursor-pointer relative flex items-center justify-center p-1"
@@ -318,7 +317,7 @@ const Navbar = () => {
 
       {/* MOBILE MENU */}
       {mobileMenu && (
-  <div className="absolute top-[82px] left-0 w-full bg-[#1b1b1b] rounded-2xl p-3 flex flex-col gap-1 lg:hidden z-50 shadow-xl border border-white/5">
+  <div className="absolute top-[82px] left-0 w-full bg-[#1b1b1b] rounded-2xl p-3 flex flex-col gap-1 lg:hidden z-50 shadow-xl border border-white/5 text-[#F6E7C6]">
 
     {/* PRIMARY NAV */}
     <NavLink

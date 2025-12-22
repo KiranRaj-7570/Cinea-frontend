@@ -9,6 +9,7 @@ import Row from "../components/Row";
 import { AuthContext } from "../context/AuthContext";
 import MovieDetailsSkeleton from "../components/Skeletons/MovieDetailsSkeleton";
 import ConfirmModal from "../components/ConfirmModal";
+import GoBackButton from "../components/GoBackButton";
 
 const MovieDetails = () => {
   const { id } = useParams();
@@ -26,8 +27,6 @@ const MovieDetails = () => {
 
   const showToast = (message) => setToast({ show: true, message });
 
-  /* ================= LOAD MOVIE ================= */
-
   useEffect(() => {
     const load = async () => {
       try {
@@ -40,8 +39,6 @@ const MovieDetails = () => {
     };
     load();
   }, [id]);
-
-  /* ================= CHECK COMPLETED ================= */
 
   useEffect(() => {
     if (!user || !inWatchlist) {
@@ -89,15 +86,13 @@ const MovieDetails = () => {
     navigate(isTV ? `/series/${item.id}` : `/movie/${item.id}`);
   };
 
-  /* ================= MARK COMPLETED ================= */
-
   const markCompleted = async () => {
     if (!user) return showToast("Login required");
     setLoadingComplete(true);
     try {
       await api.post(`/watchlist/movie/${id}/complete`);
       setCompleted(true);
-      setWatchlistRefreshKey((k) => k + 1); // 🔥 FORCE RESYNC
+      setWatchlistRefreshKey((k) => k + 1);
       showToast("Marked as completed 🎉");
     } catch (err) {
       showToast(err.response?.data?.message || "Failed to mark completed");
@@ -112,7 +107,7 @@ const MovieDetails = () => {
     try {
       await api.post(`/watchlist/movie/${id}/uncomplete`);
       setCompleted(false);
-      setWatchlistRefreshKey((k) => k + 1); // 🔥 FORCE RESYNC
+      setWatchlistRefreshKey((k) => k + 1);
       showToast("Unmarked ✓");
     } catch (err) {
       showToast(err.response?.data?.message || "Failed to unmark");
@@ -121,14 +116,15 @@ const MovieDetails = () => {
     }
   };
 
-  /* ================= RENDER ================= */
-
   return (
     <div className="min-h-screen bg-[#161616] text-white">
-      <Navbar />
+   
 
       {/* HERO */}
       <div className="relative">
+        <div className="absolute top-0 left-0 z-20">
+          <GoBackButton label="Back" />
+        </div>
         <div className="h-[30vh] sm:h-[40vh] md:h-[50vh] lg:h-[55vh] w-full overflow-hidden">
           <img
             src={
@@ -262,24 +258,21 @@ const MovieDetails = () => {
 
           {activeTab === "reviews" && (
             <ReviewsTab
-  mediaType="movie"
-  tmdbId={Number(id)}
-  poster={
-    poster_path
-      ? `https://image.tmdb.org/t/p/w342${poster_path}`
-      : ""
-  }
-  title={title}
-  onToast={showToast}
-  onCompleted={() => {
-    setCompleted(true);
-    setWatchlistRefreshKey((k) => k + 1);
-  }}
-  onWatchlistChange={setInWatchlist}
-/>
-
-
-
+              mediaType="movie"
+              tmdbId={Number(id)}
+              poster={
+                poster_path
+                  ? `https://image.tmdb.org/t/p/w342${poster_path}`
+                  : ""
+              }
+              title={title}
+              onToast={showToast}
+              onCompleted={() => {
+                setCompleted(true);
+                setWatchlistRefreshKey((k) => k + 1);
+              }}
+              onWatchlistChange={setInWatchlist}
+            />
           )}
         </div>
       </div>
