@@ -37,13 +37,30 @@ const WatchTimeChart = ({ data = [], loading }) => {
           <CartesianGrid strokeDasharray="3 3" stroke="#333" />
           <XAxis dataKey="day" stroke="#aaa" />
           <YAxis stroke="#aaa" unit="h" />
-          <Tooltip formatter={(v) => [`${v} hrs`, "Watch time"]} />
+          <Tooltip
+            cursor={false}
+            formatter={(v) => [`${v} hrs`, "Watch time"]}
+            contentStyle={{
+              backgroundColor: "#0b0b0b",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: "12px",
+              fontSize: "12px",
+            }}
+            labelStyle={{
+              color: "#F6E7C6",
+              fontWeight: 500,
+            }}
+            itemStyle={{
+              color: "#FF7A1A",
+            }}
+          />
 
           <Area
             type="monotone"
             dataKey="value"
             fill="url(#watchAreaGradient)"
             stroke="none"
+            tooltipType="none"
           />
 
           <Line

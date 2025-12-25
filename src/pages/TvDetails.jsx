@@ -10,6 +10,7 @@ import ReviewsTab from "../components/ReviewsTab";
 import Row from "../components/Row";
 import { AuthContext } from "../context/AuthContext";
 import TvDetailsSkeleton from "../components/Skeletons/TvDetailsSkeleton";
+import GoBackButton from "../components/GoBackButton";
 
 const TvDetails = () => {
   const { id } = useParams();

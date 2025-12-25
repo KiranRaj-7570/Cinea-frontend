@@ -13,7 +13,7 @@ const FollowListModal = ({ open, onClose, userId, type, onFollowCountChange }) =
 
   /* ================= LOAD LIST ================= */
   useEffect(() => {
-    if (!open) return;
+    if (!open || !userId) return;
 
     const load = async () => {
       try {

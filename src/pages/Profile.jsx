@@ -8,7 +8,6 @@ import Footer from "../components/Footer";
 import EditProfileModal from "../components/EditProfileModal";
 import AvatarModal from "../components/AvatarModal";
 import ProfileHeader from "../components/ProfileHeader";
-import GoBackButton from "../components/GoBackButton";
 
 import GenreDonutChart from "../components/GenreDonutChart";
 import WatchTimeChart from "../components/WatchTimeChart";
@@ -20,12 +19,27 @@ import FollowListModal from "../components/FollowListModal";
 
 const Profile = () => {
   const { id: routeUserId } = useParams();
-  const { user, loginUser } = useContext(AuthContext);
+  const { user, loginUser, loading: authLoading } = useContext(AuthContext);
+  
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#111] text-white">
+        <ProfileSkeleton />
+      </div>
+    );
+  }
 
-  const isOwnProfile = !routeUserId || routeUserId === user?._id;
-  const targetUserId = isOwnProfile ? user?._id : routeUserId;
+  if (!user && routeUserId === undefined) {
+    return (
+      <div className="min-h-screen bg-[#111] text-white">
+        <ProfileSkeleton />
+      </div>
+    );
+  }
 
-  /* ================= PROFILE USER ================= */
+  const isOwnProfile = !!user && (!routeUserId || routeUserId === user._id);
+  const targetUserId = user ? (isOwnProfile ? user._id : routeUserId) : null;
+
   const [profileUser, setProfileUser] = useState(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
@@ -35,86 +49,101 @@ const Profile = () => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isAvatarOpen, setIsAvatarOpen] = useState(false);
 
-  /* ================= STATS ================= */
   const [stats, setStats] = useState(null);
   const [loadingStats, setLoadingStats] = useState(true);
 
-  /* ================= TOAST ================= */
-  const [toast, setToast] = useState({ show: false, message: "", type: "info" });
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+    type: "info",
+  });
   const showToast = (message, type = "info") =>
     setToast({ show: true, message, type });
 
-  /* ================= LOAD PROFILE USER ================= */
+  // Load profile user data
   useEffect(() => {
-    if (!user) return;
+    if (!user || targetUserId === undefined) return;
 
     if (isOwnProfile) {
       setProfileUser(user);
       setFollowersCount(user.followers?.length || 0);
+      setIsFollowing(false);
       return;
     }
 
     const loadUser = async () => {
       try {
-        const res = await api.get(`/auth/users/${routeUserId}`);
+        const res = await api.get(`/auth/users/${targetUserId}`);
         setProfileUser(res.data.user);
-        setIsFollowing(res.data.user.followers?.includes(user._id));
         setFollowersCount(res.data.user.followers?.length || 0);
-      } catch {
+        setIsFollowing(res.data.user.followers?.includes(user._id));
+      } catch (err) {
+        console.error("Failed to load profile:", err);
         showToast("Failed to load profile", "error");
       }
     };
 
     loadUser();
-  }, [routeUserId, isOwnProfile, user]);
+  }, [user, targetUserId, isOwnProfile]);
 
-  /* ================= FOLLOW / UNFOLLOW ================= */
-  const handleFollowToggle = async () => {
-    try {
-      await api.post(`/auth/${routeUserId}/follow`);
-
-      // 🔥 OPTIMISTIC — NO REFETCH
-      setIsFollowing((prev) => !prev);
-      setFollowersCount((c) => (isFollowing ? c - 1 : c + 1));
-    } catch {
-      showToast("Failed to update follow", "error");
-    }
-  };
-
-  /* ================= REFETCH USER DATA ================= */
+  // Refetch user data callback
   const refetchUserData = useCallback(async () => {
+    if (!targetUserId) return;
+    
     try {
       const res = await api.get(`/auth/users/${targetUserId}`);
       setProfileUser(res.data.user);
       setFollowersCount(res.data.user.followers?.length || 0);
-    } catch {
-      console.error("Failed to refetch user data");
+      setIsFollowing(res.data.user.followers?.includes(user._id));
+    } catch (err) {
+      console.error("Failed to refetch user data:", err);
     }
+  }, [targetUserId, user._id]);
+
+  // Handle follow toggle
+  const handleFollowToggle = async () => {
+    if (!targetUserId) return;
+    
+    try {
+      await api.post(`/auth/${targetUserId}/follow`);
+      setIsFollowing((prev) => !prev);
+      setFollowersCount((c) => (isFollowing ? c - 1 : c + 1));
+    } catch (err) {
+      console.error("Failed to update follow:", err);
+      showToast("Failed to update follow", "error");
+    }
+  };
+
+  // Reset stats when targetUserId changes
+  useEffect(() => {
+    setStats(null);
+    setLoadingStats(true);
   }, [targetUserId]);
 
-  /* ================= FETCH STATS ================= */
-  const fetchStats = useCallback(async () => {
-    try {
-      setLoadingStats(true);
-
-      const url = isOwnProfile
-        ? "/profile/stats"
-        : `/profile/stats/${routeUserId}`;
-
-      const res = await api.get(url);
-      setStats(res.data);
-    } catch (err) {
-      console.error("Stats fetch error", err);
-    } finally {
-      setLoadingStats(false);
-    }
-  }, [isOwnProfile, routeUserId]);
-
+  // Fetch stats
   useEffect(() => {
-    if (targetUserId) fetchStats();
-  }, [targetUserId, fetchStats]);
+    if (!user || !targetUserId) return;
 
-  /* ================= GENRE DONUT (UNCHANGED) ================= */
+    const fetchStats = async () => {
+      try {
+        setLoadingStats(true);
+        const url = isOwnProfile
+          ? "/profile/stats"
+          : `/profile/stats/${targetUserId}`;
+
+        const res = await api.get(url);
+        setStats(res.data);
+      } catch (err) {
+        console.error("Stats fetch error:", err);
+      } finally {
+        setLoadingStats(false);
+      }
+    };
+
+    fetchStats();
+  }, [user, targetUserId, isOwnProfile]);
+
+  // Genre data processing
   const [genreData, setGenreData] = useState([]);
   const genreCache = useRef({});
 
@@ -149,9 +178,9 @@ const Profile = () => {
 
           try {
             const res = await fetch(
-              `https://api.themoviedb.org/3/${item.mediaType}/${item.tmdbId}?api_key=${
-                import.meta.env.VITE_TMDB_KEY
-              }`
+              `https://api.themoviedb.org/3/${item.mediaType}/${
+                item.tmdbId
+              }?api_key=${import.meta.env.VITE_TMDB_KEY}`
             );
             const data = await res.json();
             const genres = (data.genres || []).map((g) => g.name);
@@ -160,7 +189,9 @@ const Profile = () => {
             genres.forEach((g) => {
               genreCount[g] = (genreCount[g] || 0) + 1;
             });
-          } catch {}
+          } catch (err) {
+            console.error("Failed to fetch genres for:", cacheKey, err);
+          }
         })
       );
 
@@ -186,8 +217,6 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-[#111] text-white flex flex-col reem-kufi">
-      <Navbar />
-
       <ProfileHeader
         name={profileUser.name}
         bio={profileUser.bio}
@@ -198,13 +227,12 @@ const Profile = () => {
         isFollowing={isFollowing}
         onFollowToggle={handleFollowToggle}
         onEdit={() => setIsEditOpen(true)}
-         onAvatar={() => setIsAvatarOpen(true)} 
-         onFollowersClick={() => setShowFollowers(true)}
-  onFollowingClick={() => setShowFollowing(true)}
+        onAvatar={() => setIsAvatarOpen(true)}
+        onFollowersClick={() => setShowFollowers(true)}
+        onFollowingClick={() => setShowFollowing(true)}
       />
 
-      {/* 👇 REST OF YOUR UI IS UNCHANGED 👇 */}
-       <main className="max-w-6xl mx-auto px-4 sm:px-6 mt-10 sm:mt-20 mb-20 w-full">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 mt-10 sm:mt-20 mb-20 w-full">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* GENRE DONUT */}
           <div className="bg-[#151515] rounded-3xl p-7 shadow-xl border border-white/5">
@@ -290,7 +318,6 @@ const Profile = () => {
           />
         </div>
       </main>
-      {/* (Charts, Top 5, Reviews, Modals, Footer, Toast) */}
 
       <Footer />
 
@@ -324,28 +351,28 @@ const Profile = () => {
         type={toast.type}
         onClose={() => setToast((t) => ({ ...t, show: false }))}
       />
+      
       <FollowListModal
-  open={showFollowers}
-  onClose={() => {
-    setShowFollowers(false);
-    if (isOwnProfile) refetchUserData();
-  }}
-  userId={profileUser._id}
-  type="followers"
-  onFollowCountChange={(newCount) => setFollowersCount(newCount)}
-/>
+        open={showFollowers}
+        onClose={() => {
+          setShowFollowers(false);
+          if (isOwnProfile) refetchUserData();
+        }}
+        userId={profileUser._id}
+        type="followers"
+        onFollowCountChange={(newCount) => setFollowersCount(newCount)}
+      />
 
-<FollowListModal
-  open={showFollowing}
-  onClose={() => {
-    setShowFollowing(false);
-    if (isOwnProfile) refetchUserData();
-  }}
-  userId={profileUser._id}
-  type="following"
-  onFollowCountChange={(newCount) => setFollowersCount(newCount)}
-/>
-
+      <FollowListModal
+        open={showFollowing}
+        onClose={() => {
+          setShowFollowing(false);
+          if (isOwnProfile) refetchUserData();
+        }}
+        userId={profileUser._id}
+        type="following"
+        onFollowCountChange={(newCount) => setFollowersCount(newCount)}
+      />
     </div>
   );
 };
