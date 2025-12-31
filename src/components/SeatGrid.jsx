@@ -21,7 +21,6 @@ const SeatGrid = ({
   return (
     <div className="mt-10 overflow-x-auto pb-6">
       <div className="flex justify-start lg:justify-center gap-24 px-8">
-        {/* 🔹 Two blocks (left & right) */}
         {[0, 1].map((block) => (
           <div key={block} className="space-y-3">
             {layout.map((row) => {
@@ -32,7 +31,7 @@ const SeatGrid = ({
 
               return (
                 <div key={row.row} className="flex items-center gap-3">
-                  {/* Row label only on left block */}
+      
                   {block === 0 && (
                     <span className="w-4 text-slate-400">
                       {row.row}

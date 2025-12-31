@@ -62,9 +62,8 @@ const BookMoviesPage = () => {
     <div className="min-h-screen pt-16 bg-linear-to-b from-[#2f2f2f] via-[#111] to-[#141414] text-white flex flex-col">
       <Navbar />
 
-      {/* 🔹 PAGE CONTENT */}
       <div className="flex-1 pb-24">
-        {/* HEADER */}
+   
         <div className="max-w-7xl mx-auto px-6 mt-12">
           <h1 className="text-4xl font-bold tracking-normal anton text-[#F6E7C6]">
             MOVIES PLAYING NOW
@@ -74,10 +73,10 @@ const BookMoviesPage = () => {
           </p>
         </div>
 
-        {/* FULL WIDTH DIVIDER */}
+     
         <div className="w-screen h-[5px] bg-black/20 shadow-md mt-5" />
 
-        {/* FILTERS */}
+
         <div className="max-w-7xl mx-auto px-6 mt-6">
           <div className="flex flex-col sm:flex-row gap-4 bg-[#151515] border border-white/10 rounded-2xl p-4">
             <CityPicker value={city} onChange={setCity} />
@@ -85,7 +84,7 @@ const BookMoviesPage = () => {
           </div>
         </div>
 
-        {/* MOVIE GRID */}
+      
         <div className="max-w-7xl mx-auto px-6 mt-10">
           {loading && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">

@@ -14,11 +14,11 @@ import {
 
 const AdminCharts = () => {
   const [data, setData] = useState({
-  revenueByDate: [],
-  seatsByDate: [],
-  topMovies: [],
-});
-const [movieTitles, setMovieTitles] = useState({});
+    revenueByDate: [],
+    seatsByDate: [],
+    topMovies: [],
+  });
+  const [movieTitles, setMovieTitles] = useState({});
 
   useEffect(() => {
     api.get("/admin/charts/overview").then((res) => {
@@ -26,28 +26,27 @@ const [movieTitles, setMovieTitles] = useState({});
     });
   }, []);
   useEffect(() => {
-  if (!data.topMovies?.length) return;
+    if (!data.topMovies?.length) return;
 
-  const loadTitles = async () => {
-    const map = {};
+    const loadTitles = async () => {
+      const map = {};
 
-    await Promise.all(
-      data.topMovies.map(async (m) => {
-        try {
-          const res = await api.get(`/movies/details/${m._id}`);
-          map[m._id] = res.data.title;
-        } catch {
-          map[m._id] = `Movie ${m._id}`;
-        }
-      })
-    );
+      await Promise.all(
+        data.topMovies.map(async (m) => {
+          try {
+            const res = await api.get(`/movies/details/${m._id}`);
+            map[m._id] = res.data.title;
+          } catch {
+            map[m._id] = `Movie ${m._id}`;
+          }
+        })
+      );
 
-    setMovieTitles(map);
-  };
+      setMovieTitles(map);
+    };
 
-  loadTitles();
-}, [data.topMovies]);
-
+    loadTitles();
+  }, [data.topMovies]);
 
   if (!data) return null;
 
@@ -57,7 +56,10 @@ const [movieTitles, setMovieTitles] = useState({});
       <div className="bg-[#111] rounded-2xl p-5 border border-white/10">
         <h3 className="text-lg font-semibold mb-4">Revenue Over Time</h3>
         <ResponsiveContainer width="100%" height={260}>
-          <AreaChart data={data.revenueByDate}>
+          <AreaChart
+            data={data.revenueByDate}
+            margin={{ top: 10, right: 20, left: 0, bottom: 30 }} 
+          >
             <defs>
               <linearGradient
                 id="revenueAreaGradient"
@@ -71,8 +73,19 @@ const [movieTitles, setMovieTitles] = useState({});
               </linearGradient>
             </defs>
 
-            <XAxis dataKey="date" stroke="#aaa" />
-            <YAxis stroke="#aaa" />
+            {/* 📅 X AXIS */}
+            <XAxis
+              dataKey="date"
+              stroke="#aaa"
+              fontSize={12}
+              interval="preserveStartEnd"
+              tickFormatter={(date) => {
+                const [, month, day] = date.split("-");
+                return `${day}/${month}`; // DD/MM
+              }}
+            />
+
+            <YAxis stroke="#aaa" fontSize={12} />
 
             <Tooltip
               cursor={false}
@@ -86,7 +99,6 @@ const [movieTitles, setMovieTitles] = useState({});
               itemStyle={{ color: "#FF7A1A" }}
             />
 
-            {/* 🌊 AREA (NOW VISIBLE) */}
             <Area
               type="monotone"
               dataKey="total"
@@ -96,7 +108,6 @@ const [movieTitles, setMovieTitles] = useState({});
               tooltipType="none"
             />
 
-            {/* 📈 LINE ON TOP */}
             <Line
               type="monotone"
               dataKey="total"
@@ -113,9 +124,23 @@ const [movieTitles, setMovieTitles] = useState({});
       <div className="bg-[#111] rounded-2xl p-5 border border-white/10">
         <h3 className="text-lg font-semibold mb-4">Seats Booked Per Day</h3>
         <ResponsiveContainer width="100%" height={260}>
-          <BarChart data={data.seatsByDate}>
-            <XAxis dataKey="_id" />
-            <YAxis />
+          <BarChart
+            data={data.seatsByDate}
+            margin={{ top: 10, right: 20, left: 0, bottom: 30 }} 
+          >
+            <XAxis
+              dataKey="_id"
+              stroke="#aaa"
+              fontSize={12}
+              interval="preserveStartEnd"
+              tickFormatter={(date) => {
+                const [, month, day] = date.split("-");
+                return `${day}/${month}`; // DD/MM
+              }}
+            />
+
+            <YAxis stroke="#aaa" fontSize={12} />
+
             <Tooltip
               cursor={false}
               contentStyle={{
@@ -127,7 +152,12 @@ const [movieTitles, setMovieTitles] = useState({});
               labelStyle={{ color: "#F6E7C6" }}
               itemStyle={{ color: "#F6E7C6" }}
             />
-            <Bar dataKey="seats" fill="#F6E7C6" />
+
+            <Bar
+              dataKey="seats"
+              fill="#F6E7C6"
+              radius={[6, 6, 0, 0]} 
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -139,7 +169,7 @@ const [movieTitles, setMovieTitles] = useState({});
           <BarChart
             data={data.topMovies}
             layout="vertical"
-            margin={{ left: 40 }} // ✅ space for long IDs
+            margin={{ left: 40 }}
           >
             <XAxis type="number" stroke="#aaa" />
 
@@ -147,7 +177,7 @@ const [movieTitles, setMovieTitles] = useState({});
               type="category"
               dataKey="_id"
               tickFormatter={(id) => movieTitles[id] || id}
-              width={120} // ✅ prevents cropping
+              width={120}
               stroke="#aaa"
               tick={{ fontSize: 12 }}
             />

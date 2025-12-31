@@ -39,7 +39,13 @@ function App() {
       />
       <Route
         path="/login"
-        element={!user ? <Login /> : <Navigate to="/home" replace />}
+        element={!user ? (
+            <Login />
+          ) : user.role === "admin" ? (
+            <Navigate to="/admin" replace />
+          ) : (
+            <Navigate to="/home" replace />
+          )}
       />
 
       <Route

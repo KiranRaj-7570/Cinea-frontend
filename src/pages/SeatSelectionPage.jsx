@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../api/axios";
-import Navbar from "../components/Navbar";
 import SeatGrid from "../components/SeatGrid";
 import SeatLegend from "../components/SeatLegend";
 import ScreenBar from "../components/ScreenBar";
@@ -41,19 +40,19 @@ useEffect(() => {
     if (confirming) return;
     setConfirming(true);
     try {
-      // 1️⃣ Lock seats first
+
       await api.post(`/shows/${showId}/lock-seats`, {
         seats: selectedSeats,
       });
 
-      // 2️⃣ Create booking + Razorpay order
+   
       const res = await api.post("/booking/create", {
         movieId: Number(movieId),
         showId,
         seats: selectedSeats,
       });
 
-      // 3️⃣ Go to payment page
+  
       navigate(`/book/payment/${res.data.bookingId}`, {
         state: {
           orderId: res.data.orderId,
@@ -64,7 +63,7 @@ useEffect(() => {
         },
       });
     } catch (err) {
-      await loadSeats(); // refresh seat state
+      await loadSeats(); 
       alert(err.response?.data?.message || "Booking failed");
     } finally {
       setConfirming(false);
@@ -121,7 +120,7 @@ useEffect(() => {
           <SeatLegend />
         </div>
 
-        {/* Seat Grid */}
+       
        {loading ? (
   <SeatSelectionSkeleton />
 ) : (

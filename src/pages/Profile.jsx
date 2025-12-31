@@ -19,26 +19,11 @@ import FollowListModal from "../components/FollowListModal";
 
 const Profile = () => {
   const { id: routeUserId } = useParams();
-  const { user, loginUser, loading: authLoading } = useContext(AuthContext);
+  const { user: loggedInUser } = useContext(AuthContext);
   
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-[#111] text-white">
-        <ProfileSkeleton />
-      </div>
-    );
-  }
-
-  if (!user && routeUserId === undefined) {
-    return (
-      <div className="min-h-screen bg-[#111] text-white">
-        <ProfileSkeleton />
-      </div>
-    );
-  }
-
-  const isOwnProfile = !!user && (!routeUserId || routeUserId === user._id);
-  const targetUserId = user ? (isOwnProfile ? user._id : routeUserId) : null;
+  // Determine if viewing own profile and get target user ID
+  const isOwnProfile = !routeUserId || routeUserId === loggedInUser?._id;
+  const targetUserId = routeUserId || loggedInUser?._id;
 
   const [profileUser, setProfileUser] = useState(null);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -62,21 +47,26 @@ const Profile = () => {
 
   // Load profile user data
   useEffect(() => {
-    if (!user || targetUserId === undefined) return;
+    if (!loggedInUser) return;
 
     if (isOwnProfile) {
-      setProfileUser(user);
-      setFollowersCount(user.followers?.length || 0);
+      setProfileUser(loggedInUser);
+      setFollowersCount(loggedInUser.followers?.length || 0);
       setIsFollowing(false);
       return;
     }
 
     const loadUser = async () => {
       try {
-        const res = await api.get(`/auth/users/${targetUserId}`);
+        const res = await api.get(`/auth/users/${routeUserId}`);
         setProfileUser(res.data.user);
         setFollowersCount(res.data.user.followers?.length || 0);
-        setIsFollowing(res.data.user.followers?.includes(user._id));
+        
+        // Check if current user is in followers array (followers are objects with _id)
+        const isFollowingUser = res.data.user.followers?.some(
+          (follower) => follower._id === loggedInUser._id
+        );
+        setIsFollowing(isFollowingUser || false);
       } catch (err) {
         console.error("Failed to load profile:", err);
         showToast("Failed to load profile", "error");
@@ -84,28 +74,32 @@ const Profile = () => {
     };
 
     loadUser();
-  }, [user, targetUserId, isOwnProfile]);
+  }, [routeUserId, loggedInUser, isOwnProfile]);
 
   // Refetch user data callback
   const refetchUserData = useCallback(async () => {
-    if (!targetUserId) return;
+    if (!routeUserId) return;
     
     try {
-      const res = await api.get(`/auth/users/${targetUserId}`);
+      const res = await api.get(`/auth/users/${routeUserId}`);
       setProfileUser(res.data.user);
       setFollowersCount(res.data.user.followers?.length || 0);
-      setIsFollowing(res.data.user.followers?.includes(user._id));
+      
+      const isFollowingUser = res.data.user.followers?.some(
+        (follower) => follower._id === loggedInUser._id
+      );
+      setIsFollowing(isFollowingUser || false);
     } catch (err) {
       console.error("Failed to refetch user data:", err);
     }
-  }, [targetUserId, user._id]);
+  }, [routeUserId, loggedInUser._id]);
 
   // Handle follow toggle
   const handleFollowToggle = async () => {
-    if (!targetUserId) return;
+    if (!routeUserId) return;
     
     try {
-      await api.post(`/auth/${targetUserId}/follow`);
+      await api.post(`/auth/${routeUserId}/follow`);
       setIsFollowing((prev) => !prev);
       setFollowersCount((c) => (isFollowing ? c - 1 : c + 1));
     } catch (err) {
@@ -122,7 +116,7 @@ const Profile = () => {
 
   // Fetch stats
   useEffect(() => {
-    if (!user || !targetUserId) return;
+    if (!loggedInUser || !targetUserId) return;
 
     const fetchStats = async () => {
       try {
@@ -135,13 +129,14 @@ const Profile = () => {
         setStats(res.data);
       } catch (err) {
         console.error("Stats fetch error:", err);
+        showToast("Failed to load statistics", "error");
       } finally {
         setLoadingStats(false);
       }
     };
 
     fetchStats();
-  }, [user, targetUserId, isOwnProfile]);
+  }, [targetUserId, isOwnProfile, loggedInUser]);
 
   // Genre data processing
   const [genreData, setGenreData] = useState([]);
@@ -190,7 +185,7 @@ const Profile = () => {
               genreCount[g] = (genreCount[g] || 0) + 1;
             });
           } catch (err) {
-            console.error("Failed to fetch genres for:", cacheKey, err);
+            console.error("Failed to fetch genres:", err);
           }
         })
       );
@@ -217,6 +212,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-[#111] text-white flex flex-col reem-kufi">
+      <Navbar />
       <ProfileHeader
         name={profileUser.name}
         bio={profileUser.bio}
@@ -326,8 +322,11 @@ const Profile = () => {
           <EditProfileModal
             isOpen={isEditOpen}
             onClose={() => setIsEditOpen(false)}
-            user={user}
-            onUpdate={loginUser}
+            user={loggedInUser}
+            onUpdate={() => {
+              refetchUserData();
+              showToast("Profile updated successfully", "success");
+            }}
             onSuccess={() =>
               showToast("Profile updated successfully", "success")
             }
@@ -336,8 +335,11 @@ const Profile = () => {
           <AvatarModal
             isOpen={isAvatarOpen}
             onClose={() => setIsAvatarOpen(false)}
-            user={user}
-            onUpdate={loginUser}
+            user={loggedInUser}
+            onUpdate={() => {
+              refetchUserData();
+              showToast("Avatar updated successfully", "success");
+            }}
             onSuccess={() =>
               showToast("Avatar updated successfully", "success")
             }

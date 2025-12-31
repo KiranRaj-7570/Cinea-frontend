@@ -1,6 +1,5 @@
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import Navbar from "../components/Navbar";
 import CityPicker from "../components/CityPicker";
 import DateTabs from "../components/DateTabs";
 import TheatreCard from "../components/TheatreCard";

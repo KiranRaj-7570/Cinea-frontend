@@ -7,11 +7,10 @@ const AddShow = () => {
   const [theatreId, setTheatreId] = useState("");
   const [screenNumber, setScreenNumber] = useState("");
 
-  // 👇 MULTIPLE DATES
+  
   const [dateInput, setDateInput] = useState("");
   const [dates, setDates] = useState([]);
 
-  // 👇 MULTIPLE TIMES
   const [timeInput, setTimeInput] = useState("");
   const [times, setTimes] = useState([]);
 
@@ -59,26 +58,23 @@ const AddShow = () => {
     }));
   };
 
-  // ➕ add date
   const addDate = () => {
     if (!dateInput || dates.includes(dateInput)) return;
     setDates((prev) => [...prev, dateInput].sort());
     setDateInput("");
   };
 
-  // ❌ remove date
+  
   const removeDate = (d) => {
     setDates((prev) => prev.filter((x) => x !== d));
   };
 
-  // ➕ add time
   const addTime = () => {
     if (!timeInput || times.includes(timeInput)) return;
     setTimes((prev) => [...prev, timeInput].sort());
     setTimeInput("");
   };
 
-  // ❌ remove time
   const removeTime = (t) => {
     setTimes((prev) => prev.filter((x) => x !== t));
   };
@@ -102,7 +98,6 @@ const AddShow = () => {
     try {
       setLoading(true);
 
-      // Create shows for each date
       for (const date of dates) {
         await api.post("/admin/shows", {
           movieId: Number(movieId),
