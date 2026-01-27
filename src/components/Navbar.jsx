@@ -15,7 +15,6 @@ const Navbar = () => {
   const location = useLocation();
 
   const [mobileMenu, setMobileMenu] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState(false);
   const [open, setOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -27,7 +26,7 @@ const Navbar = () => {
   const debouncedQuery = useDebounce(searchValue, 300);
   const dropdownRef = useRef(null);
 
-  /* ================= FETCH UNREAD COUNT ================= */
+
   const fetchUnreadCount = async () => {
     if (!user) return;
 
@@ -42,26 +41,26 @@ const Navbar = () => {
   useEffect(() => {
     if (user) {
       fetchUnreadCount();
-      // Refresh every 30 seconds
+      
       const interval = setInterval(fetchUnreadCount, 30000);
       return () => clearInterval(interval);
     }
   }, [user]);
 
-  /* ================= REFRESH UNREAD COUNT WHEN MODAL CLOSES ================= */
+
   useEffect(() => {
     if (!notificationsOpen) {
       fetchUnreadCount();
     }
   }, [notificationsOpen]);
 
-  /* ---------------- sync search from URL ---------------- */
+
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     setSearchValue(params.get("q") || "");
   }, [location.search]);
 
-  /* ---------------- helpers ---------------- */
+
   const getYear = (item) => {
     if (item.release_date) return item.release_date.split("-")[0];
     if (item.first_air_date) return item.first_air_date.split("-")[0];
@@ -93,7 +92,7 @@ const Navbar = () => {
     });
   };
 
-  /* ---------------- SEARCH SUGGESTIONS (RESTORED) ---------------- */
+
   useEffect(() => {
     if (!debouncedQuery || debouncedQuery.trim() === "") {
       setSuggestions([]);
@@ -128,7 +127,6 @@ const Navbar = () => {
 
         let list = Array.from(map.values());
 
-        // 🔥 LOCAL FILTER — restores "dar → Dark"
         const q = searchValue.toLowerCase();
         list = list.filter((item) => {
           const name = (item.title || item.name || "").toLowerCase();
@@ -147,7 +145,6 @@ const Navbar = () => {
     return () => (cancelled = true);
   }, [debouncedQuery, searchValue]);
 
-  /* ---------------- CLICK OUTSIDE ---------------- */
   useEffect(() => {
   const handleClickOutside = (e) => {
     if (profileRef.current && !profileRef.current.contains(e.target)) {
@@ -164,7 +161,6 @@ const Navbar = () => {
     navigate("/login");
   };
 
-  /* ================================================================ */
 
   return (
     <nav className="fixed top-4 left-1/2 -translate-x-1/2 w-[95%] max-w-[1298px] h-[72px] bg-[#222222] rounded-[70px] z-50 flex items-center px-4 md:px-6 shadow-lg">
@@ -275,7 +271,7 @@ const Navbar = () => {
               )}
             </button>
 
-            {/* PROFILE AVATAR (RESTORED) */}
+         
             <div className="relative" ref={profileRef}>
               <button
                 onClick={() => setOpen((prev) => !prev)}
@@ -308,12 +304,14 @@ const Navbar = () => {
         open={notificationsOpen} 
         onClose={() => setNotificationsOpen(false)} 
       />
-      <button
-        onClick={() => setMobileMenu(!mobileMenu)}
-        className="lg:hidden text-[#F6E7C6] ml-2"
-      >
-        {mobileMenu ? <FiX size={26} /> : <FiMenu size={26} />}
-      </button>
+      {user && (
+  <button
+    onClick={() => setMobileMenu(!mobileMenu)}
+    className="lg:hidden text-[#F6E7C6] ml-2"
+  >
+    {mobileMenu ? <FiX size={26} /> : <FiMenu size={26} />}
+  </button>
+)}
 
       {/* MOBILE MENU */}
       {mobileMenu && (

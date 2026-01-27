@@ -76,20 +76,21 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0b0b] flex items-center justify-center ">
-      <div className="w-full max-w-md bg-[#151515] border border-white/10 rounded-3xl p-8 shadow-2xl overflow-hidden">
-        
-      
+    <div className="min-h-dvh bg-[#0b0b0b] flex items-center justify-center px-4 sm:px-0">
+      <div className="w-full max-w-md bg-[#151515] border border-white/10 rounded-3xl shadow-2xl overflow-hidden">
+
+        {/* SLIDER */}
         <div
-          className="flex transition-transform duration-300"
+          className="flex w-full transition-transform duration-300 ease-in-out"
           style={{ transform: `translateX(-${(step - 1) * 100}%)` }}
         >
 
-          <section className="w-full shrink-0 p-8">
+          {/* STEP 1 */}
+          <section className="w-full shrink-0 p-6 sm:p-8">
             <h2 className="text-2xl anton text-[#F6E7C6] mb-2">
               Forgot Password
             </h2>
-            <p className="text-sm text-slate-400 mb-5">
+            <p className="text-sm text-slate-400 mb-6">
               Enter your registered email
             </p>
 
@@ -111,18 +112,18 @@ const ForgotPassword = () => {
 
             <Link
               to="/login"
-              className="block text-center text-xs text-slate-400 mt-4 hover:text-[#F6E7C6]"
+              className="block text-center text-xs text-slate-400 mt-5 hover:text-[#F6E7C6]"
             >
               Back to Login
             </Link>
           </section>
 
-          
-          <section className="w-full shrink-0 p-8">
+          {/* STEP 2 */}
+          <section className="w-full shrink-0 p-6 sm:p-8">
             <h2 className="text-2xl anton text-[#F6E7C6] mb-2">
               Verify OTP
             </h2>
-            <p className="text-sm text-slate-400 mb-5">
+            <p className="text-sm text-slate-400 mb-6">
               Enter the 6-digit code
             </p>
 
@@ -152,12 +153,12 @@ const ForgotPassword = () => {
             </div>
           </section>
 
-          
-          <section className="w-full shrink-0 p-8">
+          {/* STEP 3 */}
+          <section className="w-full shrink-0 p-6 sm:p-8">
             <h2 className="text-2xl anton text-[#F6E7C6] mb-2">
               New Password
             </h2>
-            <p className="text-sm text-slate-400 mb-5">
+            <p className="text-sm text-slate-400 mb-6">
               Set a new secure password
             </p>
 
@@ -188,8 +189,9 @@ const ForgotPassword = () => {
           </section>
         </div>
 
+        {/* MESSAGE */}
         {message && (
-          <p className="mt-5 text-center text-xs text-[#FF7A1A]">
+          <p className="px-6 pb-6 text-center text-xs text-[#FF7A1A]">
             {message}
           </p>
         )}

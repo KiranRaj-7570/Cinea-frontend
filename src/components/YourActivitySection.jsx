@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import api from "../api/axios";
 import SectionSkeleton from "./Skeletons/SectionSkeleton";
 import ActivityCard from "./ActivityCard";
@@ -7,25 +7,43 @@ const YourActivitySection = () => {
   const [items, setItems] = useState([]);
   const [fallback, setFallback] = useState(false);
   const [loading, setLoading] = useState(true);
+  const isMountedRef = useRef(true);
+  const lastFetchRef = useRef(0);
 
   // Function to fetch activity data
   const fetchActivity = async () => {
+    const now = Date.now();
+    // Debounce: only fetch if last fetch was more than 1 second ago
+    if (now - lastFetchRef.current < 1000) return;
+    lastFetchRef.current = now;
+
     try {
       setLoading(true);
       const res = await api.get("/home/your-activity");
-      setItems(res.data.items || []);
-      setFallback(res.data.fallback);
+      console.log("API Response:", res.data.items); // DEBUG
+      if (isMountedRef.current) {
+        setItems(res.data.items || []);
+        setFallback(res.data.fallback);
+      }
     } catch (err) {
       console.error("Failed to fetch activity:", err);
-      setFallback(true);
+      if (isMountedRef.current) {
+        setFallback(true);
+      }
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
     }
   };
 
   // Fetch on mount
   useEffect(() => {
+    isMountedRef.current = true;
     fetchActivity();
+    return () => {
+      isMountedRef.current = false;
+    };
   }, []);
 
   // Refetch when window gains focus
@@ -33,7 +51,6 @@ const YourActivitySection = () => {
     const onFocus = () => {
       fetchActivity();
     };
-
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);
   }, []);
@@ -51,7 +68,7 @@ const YourActivitySection = () => {
       ) : (
         <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
           {items.map((item, idx) => (
-            <ActivityCard key={idx} item={item} />
+            <ActivityCard key={item.tmdbId ? `${item.mediaType}-${item.tmdbId}` : idx} item={item} />
           ))}
         </div>
       )}

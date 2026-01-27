@@ -204,7 +204,6 @@ const Profile = () => {
   if (!profileUser) {
     return (
       <div className="min-h-screen bg-[#111] text-white">
-        <Navbar />
         <ProfileSkeleton />
       </div>
     );
@@ -212,7 +211,6 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-[#111] text-white flex flex-col reem-kufi">
-      <Navbar />
       <ProfileHeader
         name={profileUser.name}
         bio={profileUser.bio}

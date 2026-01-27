@@ -11,14 +11,14 @@ const BackdropCard = ({ item, onClick }) => {
 
   return (
     <div
-      className="cursor-pointer w-[280px] md:w-[340px] group"
+      className="cursor-pointer w-full group"
       onClick={() => onClick(item)}
     >
       <div
         className="
-          rounded-xl overflow-hidden bg-[#F6E7C6] border border-slate-800
+          rounded-lg sm:rounded-xl overflow-hidden bg-[#F6E7C6] border border-slate-800
           shadow-lg transition-all duration-300 transform 
-          group-hover:border-[#fff4c6]
+          group-hover:border-[#fff4c6] group-hover:scale-105
         "
       >
         <img
@@ -28,22 +28,21 @@ const BackdropCard = ({ item, onClick }) => {
               : "/no-backdrop.png"
           }
           alt={title}
-          className="w-full h-[150px] md:h-[190px] object-cover"
+          className="w-full h-[100px] sm:h-[130px] md:h-[160px] lg:h-[190px] object-cover"
         />
-
-        <div className="p-2">
-          <p className="text-sm md:text-xl anton text-[#222] truncate">
+        <div className="p-1 sm:p-1.5 md:p-2">
+          <p className="text-xs sm:text-sm md:text-base lg:text-lg anton text-[#222] truncate">
             {title}
           </p>
           <p className="text-xs md:text-sm text-[#222] poppins-regular">{year}</p>
-          <p className="text-xs md:text-sm text-[#222] antonio">
+          <p className="text-xs md:text-sm text-[#222] antonio flex items-center gap-1">
             <StarIcon
-                className="inline mr-1 border-0 outline-0 mb-1"
-                size={14}
-                md:size={24}
-                color="#ff8636"
-                fill="#ff8636"
-              /> {item.vote_average?.toFixed(1)}
+              className="flex-shrink-0"
+              size={12}
+              color="#ff8636"
+              fill="#ff8636"
+            />
+            {item.vote_average?.toFixed(1)}
           </p>
         </div>
       </div>

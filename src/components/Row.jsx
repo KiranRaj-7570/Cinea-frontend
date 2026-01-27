@@ -15,15 +15,48 @@ const Row = ({ title, fetchUrl, cardType = "poster", onSelect }) => {
   const [showLeftFade, setShowLeftFade] = useState(false);
   const [showRightFade, setShowRightFade] = useState(true);
   const [titleDim, setTitleDim] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(typeof window !== "undefined" ? window.innerWidth : 1024);
 
   const swiperRef = useRef(null);
   const prevRef = useRef(null);
   const nextRef = useRef(null);
   const idleTimer = useRef(null);
 
-  const SLIDE_SIZE = cardType === "poster" ? 180 : 340;
-  const SPACE_BETWEEN = 18;
+  // Responsive slide sizes
+  const SLIDE_CONFIG = {
+    poster: {
+      xs: 130,
+      sm: 150,
+      md: 180,
+      lg: 180,
+    },
+    backdrop: {
+      xs: 240,
+      sm: 280,
+      md: 320,
+      lg: 340,
+    },
+  };
+
+  const getSlideSizes = () => {
+    if (windowWidth < 640) return cardType === "poster" ? SLIDE_CONFIG.poster.xs : SLIDE_CONFIG.backdrop.xs;
+    if (windowWidth < 768) return cardType === "poster" ? SLIDE_CONFIG.poster.sm : SLIDE_CONFIG.backdrop.sm;
+    if (windowWidth < 1024) return cardType === "poster" ? SLIDE_CONFIG.poster.md : SLIDE_CONFIG.backdrop.md;
+    return cardType === "poster" ? SLIDE_CONFIG.poster.lg : SLIDE_CONFIG.backdrop.lg;
+  };
+
+  const SLIDE_SIZE = getSlideSizes();
+  const SPACE_BETWEEN = windowWidth < 768 ? 12 : 18;
   const ARROW_SCROLL_SPEED_MS = 700;
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -65,20 +98,20 @@ const Row = ({ title, fetchUrl, cardType = "poster", onSelect }) => {
   };
 
   return (
-    <div className="mb-12 relative overflow-visible">
+    <div className="mb-8 sm:mb-10 md:mb-12 relative overflow-visible">
       {/* Title */}
       <h2
-        className={`text-2xl font-semibold mb-3 transition-opacity duration-200 ${
+        className={`text-xl sm:text-2xl md:text-3xl font-semibold mb-2 sm:mb-3 transition-opacity duration-200 ${
           titleDim ? "opacity-60" : "opacity-100"
         } text-[#FF7A1A] reem-kufi`}
       >
         {title}
       </h2>
 
-      <div className="relative overflow-x-clip px-2">
+      <div className="relative overflow-x-clip px-1 sm:px-2">
         {/* Left Fade */}
         <div
-          className={`absolute left-0 top-0 bottom-0 w-15 z-30 overflow-y-visible pointer-events-none transition-opacity duration-300 bg-linear-to-b from-[rgba(80,80,80,0.7)] to-[#070707] ${
+          className={`absolute left-0 top-0 bottom-0 w-8 sm:w-12 md:w-15 z-30 overflow-y-visible pointer-events-none transition-opacity duration-300 ${
             showLeftFade ? "opacity-100" : "opacity-0"
           }`}
           style={{
@@ -88,7 +121,7 @@ const Row = ({ title, fetchUrl, cardType = "poster", onSelect }) => {
 
         {/* Right Fade */}
         <div
-          className={`absolute right-0 top-0 bottom-0 w-15  z-30 overflow-y-visible pointer-events-none transition-opacity duration-300 ${
+          className={`absolute right-0 top-0 bottom-0 w-8 sm:w-12 md:w-15 z-30 overflow-y-visible pointer-events-none transition-opacity duration-300 ${
             showRightFade ? "opacity-100" : "opacity-0"
           }`}
           style={{
@@ -136,14 +169,14 @@ const Row = ({ title, fetchUrl, cardType = "poster", onSelect }) => {
                   {/* SKELETON CARD */}
                   <div className="animate-pulse">
                     {cardType === "poster" ? (
-                      <div className="w-full h-[260px] rounded-lg bg-slate-700/40" />
+                      <div className="w-full h-[170px] sm:h-[200px] md:h-[260px] rounded-lg bg-slate-700/40" />
                     ) : (
-                      <div className="w-full h-[190px] rounded-lg bg-slate-700/40" />
+                      <div className="w-full h-[110px] sm:h-[140px] md:h-[190px] rounded-lg bg-slate-700/40" />
                     )}
 
-                    <div className="mt-2 space-y-2 px-1">
-                      <div className="h-4 w-3/4 bg-slate-600/40 rounded" />
-                      <div className="h-3 w-1/2 bg-slate-600/30 rounded" />
+                    <div className="mt-2 space-y-1 px-1">
+                      <div className="h-3 sm:h-4 w-3/4 bg-slate-600/40 rounded" />
+                      <div className="h-2 sm:h-3 w-1/2 bg-slate-600/30 rounded" />
                     </div>
                   </div>
                 </SwiperSlide>
@@ -164,14 +197,14 @@ const Row = ({ title, fetchUrl, cardType = "poster", onSelect }) => {
 
         <button
           ref={prevRef}
-          className={`absolute left-2 top-1/2 -translate-y-1/2 z-40 text-[#FF7A1A] text-8xl font-extralight w-10 h-10 flex items-center justify-center transition-opacity duration-300 ${
+          className={`absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 z-40 text-[#FF7A1A] text-6xl sm:text-7xl md:text-8xl font-extralight w-8 sm:w-10 h-8 sm:h-10 flex items-center justify-center transition-opacity duration-300 ${
             !showLeftFade ? "opacity-0 pointer-events-none" : "opacity-100"
           }`}
           onClick={() => {
             const swiper = swiperRef.current;
             if (!swiper) return;
 
-            const step = computeStep(swiper); // auto choose 3–4 based on screen
+            const step = computeStep(swiper);
             const target = Math.max(0, swiper.activeIndex - step);
 
             swiper.slideTo(target, ARROW_SCROLL_SPEED_MS);
@@ -183,14 +216,14 @@ const Row = ({ title, fetchUrl, cardType = "poster", onSelect }) => {
 
         <button
           ref={nextRef}
-          className={`absolute right-2 top-1/2 -translate-y-1/2 z-40 text-[#FF7A1A] text-8xl font-extralight w-10 h-10 flex items-center justify-center transition-opacity duration-300 ${
+          className={`absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 z-40 text-[#FF7A1A] text-6xl sm:text-7xl md:text-8xl font-extralight w-8 sm:w-10 h-8 sm:h-10 flex items-center justify-center transition-opacity duration-300 ${
             !showRightFade ? "opacity-0 pointer-events-none" : "opacity-100"
           }`}
           onClick={() => {
             const swiper = swiperRef.current;
             if (!swiper) return;
 
-            const step = computeStep(swiper); // auto choose 3–4 based on screen
+            const step = computeStep(swiper);
             const target = Math.min(
               swiper.slides.length - 1,
               swiper.activeIndex + step

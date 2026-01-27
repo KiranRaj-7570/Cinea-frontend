@@ -23,7 +23,6 @@ const DateTabs = ({ value, onChange }) => {
     return date.toDateString().slice(0, 10);
   };
 
-  // auto-scroll active date
   useEffect(() => {
     const active = containerRef.current?.querySelector(
       "[data-active='true']"
@@ -48,7 +47,7 @@ const DateTabs = ({ value, onChange }) => {
             key={d.toISOString()}
             data-active={isActive}
             onClick={() => onChange(d)}
-            className={`px-4 py-2 rounded-xl whitespace-nowrap transition
+            className={`px-3 py-2 text-sm rounded-xl whitespace-nowrap transition
               ${
                 isActive
                   ? "bg-[#FF7A1A] text-black"

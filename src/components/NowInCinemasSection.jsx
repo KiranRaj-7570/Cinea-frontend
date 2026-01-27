@@ -64,7 +64,7 @@ const NowInCinemasSection = () => {
   if (loading) {
     return (
       <section className="max-w-7xl mx-auto px-4 mt-14">
-        <h2 className="text-3xl md:text-4xl anton text-[#F6E7C6] mb-5">
+        <h2 className="text-3xl md:text-4xl anton text-[#F6E7C6]">
           Now in Cinemas
         </h2>
         <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen h-[5px] bg-black/20 shadow-md mt-5 mb-5" />

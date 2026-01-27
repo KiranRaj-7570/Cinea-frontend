@@ -10,7 +10,7 @@ const GlobalReviewsSection = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // 1️⃣ DATA FETCH (unchanged logic)
+
   useEffect(() => {
     let mounted = true;
 
@@ -31,7 +31,7 @@ const GlobalReviewsSection = () => {
     };
   }, []);
 
-  // 2️⃣ MOUSE DRAG SCROLL (DESKTOP)
+
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
@@ -81,7 +81,7 @@ const GlobalReviewsSection = () => {
   if (!loading && !items.length) return null;
 
   return (
-    <section className="max-w-7xl mx-auto px-4 mt-14 mb-5">
+    <section className="max-w-7xl mx-auto px-4 mt-14 ">
       <h2 className="text-3xl md:text-4xl anton text-[#F6E7C6] mb-5">
         Most Reviewed on Cinéa
       </h2>
