@@ -2,6 +2,7 @@ import { useState, useContext, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
+import { validatePassword } from "../utils/passwordValidator";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -34,8 +35,13 @@ const Signup = () => {
       return;
     }
 
-    if (password.length < 6) {
-      setMessage("Password must be at least 6 characters long.");
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      const failedRequirements = Object.values(passwordValidation.requirements)
+        .filter(req => !req.met)
+        .map(req => req.label)
+        .join(", ");
+      setMessage(`Password must contain: ${failedRequirements}`);
       return;
     }
 
