@@ -29,25 +29,36 @@ const Signup = () => {
 
   const handleSignup = async (e) => {
     e.preventDefault();
+    setMessage(""); // Clear previous messages immediately
 
+    // Validation 1: Check if passwords match
     if (password !== confirmPassword) {
       setMessage("Passwords do not match!");
       return;
     }
 
-    const passwordValidation = validatePassword(password);
-    if (!passwordValidation.isValid) {
-      const failedRequirements = Object.values(passwordValidation.requirements)
-        .filter(req => !req.met)
-        .map(req => req.label)
-        .join(", ");
-      setMessage(`Password must contain: ${failedRequirements}`);
+    // Validation 2: Check name is not empty
+    if (!name.trim()) {
+      setMessage("Name is required!");
       return;
     }
 
+    // Validation 3: Check email is not empty
+    if (!email.trim()) {
+      setMessage("Email is required!");
+      return;
+    }
+
+    // Validation 4: Check password strength (CLIENT-SIDE - NO SERVER CALL)
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      setMessage(`Password must contain: ${passwordValidation.failedRequirements.join(", ")}`);
+      return; // EXIT HERE - Don't make any server call
+    }
+
+    // ALL validations passed - NOW make server call
     try {
       setLoading(true);
-      setMessage("");
       const res = await api.post("/auth/signup", { name, email, password });
       loginUser(res.data.user);
       setMessage("Signup successful! Redirecting...");
