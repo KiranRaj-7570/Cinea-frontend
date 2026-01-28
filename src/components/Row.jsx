@@ -11,6 +11,7 @@ import "swiper/css/navigation";
 
 const Row = ({ title, fetchUrl, cardType = "poster", onSelect }) => {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [items, setItems] = useState([]);
   const [showLeftFade, setShowLeftFade] = useState(false);
   const [showRightFade, setShowRightFade] = useState(true);
@@ -62,6 +63,7 @@ const Row = ({ title, fetchUrl, cardType = "poster", onSelect }) => {
     const load = async () => {
       try {
         setLoading(true);
+        setError(null);
         const res = await api.get(fetchUrl);
         const filtered = (res.data?.results || []).filter((i) =>
           cardType === "poster" ? i.poster_path : i.backdrop_path
@@ -69,12 +71,14 @@ const Row = ({ title, fetchUrl, cardType = "poster", onSelect }) => {
         setItems(filtered);
       } catch (err) {
         console.error("Row fetch failed:", err.message);
+        setError(`Failed to load ${title}. Please try again.`);
+        setItems([]);
       } finally {
         setLoading(false);
       }
     };
     load();
-  }, [fetchUrl, cardType]);
+  }, [fetchUrl, cardType, title]);
 
   const updateFade = (swiper) => {
     if (!swiper) return;
@@ -107,6 +111,13 @@ const Row = ({ title, fetchUrl, cardType = "poster", onSelect }) => {
       >
         {title}
       </h2>
+
+      {/* Error Message */}
+      {error && !loading && (
+        <div className="bg-red-900/30 border border-red-700 rounded-lg p-3 mb-3 text-red-200 text-sm">
+          {error}
+        </div>
+      )}
 
       <div className="relative overflow-x-clip px-1 sm:px-2">
         {/* Left Fade */}
