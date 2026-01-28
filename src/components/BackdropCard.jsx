@@ -28,7 +28,7 @@ const BackdropCard = ({ item, onClick }) => {
               : "/no-backdrop.png"
           }
           alt={title}
-          className="w-full h-[100px] sm:h-[130px] md:h-[160px] lg:h-[190px] object-cover"
+          className="w-full h-[100px] sm:h-[130px] md:h-40 lg:h-[190px] object-cover"
         />
         <div className="p-1 sm:p-1.5 md:p-2">
           <p className="text-xs sm:text-sm md:text-base lg:text-lg anton text-[#222] truncate">
@@ -37,7 +37,7 @@ const BackdropCard = ({ item, onClick }) => {
           <p className="text-xs md:text-sm text-[#222] poppins-regular">{year}</p>
           <p className="text-xs md:text-sm text-[#222] antonio flex items-center gap-1">
             <StarIcon
-              className="flex-shrink-0"
+              className="shrink-0"
               size={12}
               color="#ff8636"
               fill="#ff8636"
