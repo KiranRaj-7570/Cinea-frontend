@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import SearchPageSkeleton from "../components/Skeletons/SearchpageSkeleton";
+import SearchPageSkeleton from "../components/Skeletons/SearchPageSkeleton";
 
 const SearchPage = () => {
   const [params] = useSearchParams();
